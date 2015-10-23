@@ -1,4 +1,5 @@
-﻿using System;
+﻿/* I am not the author of this code, however I may have slightly modified it*/
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;

@@ -1,4 +1,5 @@
-﻿using System;
+﻿/* I am not the author of this code */
+using System;
 using System.Runtime.Serialization;
 
 namespace GlobalHotkeys

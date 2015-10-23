@@ -1,4 +1,6 @@
-﻿using System;
+﻿/* I am not the author of this code */
+
+using System;
 using System.Windows.Forms;
 
 namespace GlobalHotkeys
