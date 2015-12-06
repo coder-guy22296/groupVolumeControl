@@ -40,6 +40,8 @@ namespace VolumeControlUtility
                     {
                         outPGM.programGroups.ElementAt(programGroupIndex).addAudioSession(aSession);
                     }
+                    outPGM.programGroups.ElementAt(programGroupIndex).audioSessions.Add(strSession);
+
                 }
             }
             return outPGM;

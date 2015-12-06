@@ -11,16 +11,39 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Web.UI.WebControls;
+using System;
+using System.Management;
+using System.Threading;
 
 namespace VolumeControlUtility
 {
     public partial class Form1 : Form
     {
         private List<GlobalHotkey> hotkeys = new List<GlobalHotkey>();
-
+        private bool rebuildInProgress = false;
+        //public event EventArrivedEventHandler ProcessStart;
+        /*
+        protected virtual void OnProcessStart(EventArgs e)
+        {
+            ConsoleManager.Show();
+            Console.WriteLine("Process started!!!!");
+        }
+        */
         public Form1()
         {
             InitializeComponent();
+
+            WqlEventQuery query =
+            new WqlEventQuery("__InstanceCreationEvent",
+            new TimeSpan(0, 0, 1),
+            "TargetInstance ISA \"Win32_Process\"");
+
+            ManagementEventWatcher MEW = new ManagementEventWatcher("SELECT TargetInstance FROM __InstanceCreationEvent WITHIN 1 WHERE TargetInstance ISA 'Win32_Process'");
+            //MEW.Query = query;
+            MEW.EventArrived += new EventArrivedEventHandler(this.OnProcessStart);
+            MEW.Start();
+
+            hotkeys.Add(new GlobalHotkey(Modifiers.NoMod, Keys.F5, this, true));
 
             foreach (ProgramGroup group in Program.PGM.programGroups)
             {
@@ -47,6 +70,14 @@ namespace VolumeControlUtility
             Closing += Form1Closing;
         }
 
+        private void OnProcessStart(object sender, EventArrivedEventArgs e)
+        {
+            ConsoleManager.Show();
+            Console.WriteLine("Process started!!!!");
+            rebuildGroups();
+
+        }
+
         void Form1Closing(object sender, CancelEventArgs e)
         {
             foreach (GlobalHotkey ghk in hotkeys)
@@ -64,12 +95,29 @@ namespace VolumeControlUtility
 
         private void HotkeyProc(HotkeyInfo hotkeyInfo)
         {
+            if (rebuildInProgress) {
+                Thread.Sleep(500);
+            }
+
+
             ConsoleManager.Show();
             Console.WriteLine("{0} : Hotkey Proc! {1}, {2}{3}", DateTime.Now.ToString("hh:MM:ss.fff"),
                                              hotkeyInfo.Key, hotkeyInfo.Modifiers, Environment.NewLine);
-            foreach(ProgramGroup group in Program.PGM.programGroups){
-                group.isThisYourKotkey(hotkeyInfo);
+            if(hotkeyInfo.Key == Keys.F5)
+            {
+                //unregisterHotkeys();
+                rebuildGroups();
+
             }
+            else
+            {
+                foreach (ProgramGroup group in Program.PGM.programGroups)
+                {
+                    group.isThisYourKotkey(hotkeyInfo);
+                }
+
+            }
+
         }
         private void registerHotkeys()
         {
@@ -77,6 +125,23 @@ namespace VolumeControlUtility
             {
                 group.registerHotkey(this);
             }
+        }
+
+        private void unregisterHotkeys()
+        {
+            foreach (ProgramGroup group in Program.PGM.programGroups)
+            {
+                group.unregisterHotkeys();
+            }
+        }
+        private void rebuildGroups()
+        {
+            rebuildInProgress = true;
+            foreach (ProgramGroup group in Program.PGM.programGroups)
+            {
+                group.rebuild();
+            }
+            rebuildInProgress = false;
         }
 
         private void tableLayoutPanel1_Paint(object sender, PaintEventArgs e)
@@ -124,7 +189,7 @@ namespace VolumeControlUtility
                 {
                     group.updateActiveSessions();
                 }
-                foreach (AudioSession session in Program.PGM.programGroups.ElementAt(programGroupList.SelectedIndex).audioSessions)
+                foreach (AudioSession session in Program.PGM.programGroups.ElementAt(programGroupList.SelectedIndex).loadedAudioSessions)
                 {
                     programsInGroupList.Items.Add(session.Process.ProcessName);
                 }

@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Runtime.InteropServices;
 using System.Globalization;
+using GroupVolumeControl;
 
 namespace VolumeControlUtility
 {
@@ -38,9 +39,12 @@ namespace VolumeControlUtility
         public static void SetApplicationVolume(int pid, float level)
         {
             ISimpleAudioVolume volume = GetVolumeObject(pid);
-            if (volume == null)
+            //Console.WriteLine("vol object pid " + pid + " = "+ volume);
+            if (volume == null) { 
+                ConsoleManager.Show();
+                Console.WriteLine("processId "+pid+" is not associated with an audio session, Volume not changed!");
                 return;
-
+            }
             Guid guid = Guid.Empty;
             volume.SetMasterVolume(level / 100, ref guid);
             Marshal.ReleaseComObject(volume);

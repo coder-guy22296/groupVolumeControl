@@ -34,6 +34,7 @@ namespace VolumeControlUtility
 
         public static ProgramGroupManager PGM = new ProgramGroupManager();
         public static AudioSessionManager ASM = new AudioSessionManager();
+        public static SecureJsonSerializer<ProgramGroupManagerData> pgmDataFile = new SecureJsonSerializer<ProgramGroupManagerData>("pgmSave.json");
         [STAThread]
         static void Main()
         {
@@ -42,7 +43,7 @@ namespace VolumeControlUtility
             Application.SetCompatibleTextRenderingDefault(false);
             
             //ConsoleManager.Show();
-            SecureJsonSerializer<ProgramGroupManagerData> pgmDataFile = new SecureJsonSerializer<ProgramGroupManagerData>("pgmSave.json");
+            
             bool saveFileExists = File.Exists("pgmSave.json");
 
             if (saveFileExists)
