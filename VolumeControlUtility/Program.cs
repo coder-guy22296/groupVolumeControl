@@ -22,6 +22,7 @@ using System.Windows;
 using System.Windows.Forms;
 using System.Windows.Input;
 using GroupVolumeControl;
+using System.Threading;
 
 namespace VolumeControlUtility
 {
@@ -42,8 +43,6 @@ namespace VolumeControlUtility
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             
-            //ConsoleManager.Show();
-            
             bool saveFileExists = File.Exists("pgmSave.json");
 
             if (saveFileExists)
@@ -52,10 +51,11 @@ namespace VolumeControlUtility
             }
 
             Application.Run(new Form1());
-
+            /*
             string proceed = "y";
             do
             {
+                ConsoleManager.Show();
                 Console.Clear();
                 Console.WriteLine("0) Create a program group");
                 Console.WriteLine("1) Delete a program group");
@@ -178,6 +178,7 @@ namespace VolumeControlUtility
                         break;
                 }
             } while (proceed != "n");
+            */
         }
 
         public static void singleAppVolumeControl()

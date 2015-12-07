@@ -1,0 +1,19 @@
+{
+  "programGroups": [
+    {
+      "groupName": "Music",
+      "volAsPercent": 70,
+      "numOfSessions": 1,
+      "audioSessions": [
+        "iTunes"
+      ],
+      "hasHotkey": true,
+      "mods": [
+        "Ctrl"
+      ],
+      "volumeUp": "NumPad7",
+      "volumeDown": "NumPad4"
+    }
+  ],
+  "NumOfProgramGroups": 1
+}

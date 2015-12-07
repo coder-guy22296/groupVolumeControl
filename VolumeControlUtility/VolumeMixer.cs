@@ -41,7 +41,7 @@ namespace VolumeControlUtility
             ISimpleAudioVolume volume = GetVolumeObject(pid);
             //Console.WriteLine("vol object pid " + pid + " = "+ volume);
             if (volume == null) { 
-                ConsoleManager.Show();
+                //ConsoleManager.Show();
                 Console.WriteLine("processId "+pid+" is not associated with an audio session, Volume not changed!");
                 return;
             }

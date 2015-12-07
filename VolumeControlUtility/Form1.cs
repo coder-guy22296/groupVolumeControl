@@ -21,6 +21,7 @@ namespace VolumeControlUtility
     {
         private List<GlobalHotkey> hotkeys = new List<GlobalHotkey>();
         private bool rebuildInProgress = false;
+        private ManagementEventWatcher MEW = new ManagementEventWatcher("SELECT TargetInstance FROM __InstanceCreationEvent WITHIN 1 WHERE TargetInstance ISA 'Win32_Process'");
         //public event EventArrivedEventHandler ProcessStart;
         /*
         protected virtual void OnProcessStart(EventArgs e)
@@ -38,7 +39,7 @@ namespace VolumeControlUtility
             new TimeSpan(0, 0, 1),
             "TargetInstance ISA \"Win32_Process\"");
 
-            ManagementEventWatcher MEW = new ManagementEventWatcher("SELECT TargetInstance FROM __InstanceCreationEvent WITHIN 1 WHERE TargetInstance ISA 'Win32_Process'");
+            
             //MEW.Query = query;
             MEW.EventArrived += new EventArrivedEventHandler(this.OnProcessStart);
             MEW.Start();
@@ -72,18 +73,25 @@ namespace VolumeControlUtility
 
         private void OnProcessStart(object sender, EventArrivedEventArgs e)
         {
-            ConsoleManager.Show();
+            //ConsoleManager.Show();
             Console.WriteLine("Process started!!!!");
+            //ReloadActiveSessionList();
+            //Thread.Sleep(500);
             rebuildGroups();
 
         }
 
         void Form1Closing(object sender, CancelEventArgs e)
         {
+            MEW.Stop();
+            SecureJsonSerializer<ProgramGroupManagerData> pgmDataFile = new SecureJsonSerializer<ProgramGroupManagerData>("pgmSave.json");
+            pgmDataFile.Save(Program.PGM.generateProgramGroupManagerData());
+            unregisterHotkeys();
             foreach (GlobalHotkey ghk in hotkeys)
             {
                 ghk.Dispose();
             }
+
         }
 
         protected override void WndProc(ref Message m)
@@ -100,7 +108,7 @@ namespace VolumeControlUtility
             }
 
 
-            ConsoleManager.Show();
+            //ConsoleManager.Show();
             Console.WriteLine("{0} : Hotkey Proc! {1}, {2}{3}", DateTime.Now.ToString("hh:MM:ss.fff"),
                                              hotkeyInfo.Key, hotkeyInfo.Modifiers, Environment.NewLine);
             if(hotkeyInfo.Key == Keys.F5)
@@ -241,6 +249,11 @@ namespace VolumeControlUtility
         }
 
         private void AudioSessionList_Enter(object sender, EventArgs e)
+        {
+            ReloadActiveSessionList();
+        }
+
+        private void ReloadActiveSessionList()
         {
             AudioSessionList.Items.Clear();
             foreach (AudioSession session in Program.ASM.getActiveAudioSessions())
