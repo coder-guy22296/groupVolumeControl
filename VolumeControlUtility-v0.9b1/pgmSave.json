@@ -2,7 +2,7 @@
   "programGroups": [
     {
       "groupName": "Music",
-      "volAsPercent": 70,
+      "volAsPercent": 295,
       "numOfSessions": 1,
       "audioSessions": [
         "iTunes"
