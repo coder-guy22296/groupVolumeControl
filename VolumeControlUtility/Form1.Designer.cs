@@ -51,6 +51,7 @@
             this.label3 = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
             this.saveKbButton = new System.Windows.Forms.Button();
+            this.DefaultVolBtn = new System.Windows.Forms.Button();
             this.groupBox1.SuspendLayout();
             this.programBox.SuspendLayout();
             this.groupBox3.SuspendLayout();
@@ -321,12 +322,27 @@
             this.saveKbButton.UseVisualStyleBackColor = false;
             this.saveKbButton.Click += new System.EventHandler(this.saveKbButton_Click);
             // 
+            // DefaultVolBtn
+            // 
+            this.DefaultVolBtn.BackColor = System.Drawing.Color.Orange;
+            this.DefaultVolBtn.FlatAppearance.BorderColor = System.Drawing.Color.Gray;
+            this.DefaultVolBtn.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(192)))), ((int)(((byte)(128)))));
+            this.DefaultVolBtn.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.DefaultVolBtn.Location = new System.Drawing.Point(236, 389);
+            this.DefaultVolBtn.Name = "DefaultVolBtn";
+            this.DefaultVolBtn.Size = new System.Drawing.Size(96, 23);
+            this.DefaultVolBtn.TabIndex = 28;
+            this.DefaultVolBtn.Text = "Default Volumes";
+            this.DefaultVolBtn.UseVisualStyleBackColor = false;
+            this.DefaultVolBtn.Click += new System.EventHandler(this.DefaultVolBtn_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.White;
             this.ClientSize = new System.Drawing.Size(722, 432);
+            this.Controls.Add(this.DefaultVolBtn);
             this.Controls.Add(this.infoBox);
             this.Controls.Add(this.renameGroupButton);
             this.Controls.Add(this.saveButton);
@@ -377,6 +393,7 @@
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.ComboBox volDownKeystrokeDropDown;
         private System.Windows.Forms.ComboBox volUpKeystrokeDropDown;
+        private System.Windows.Forms.Button DefaultVolBtn;
     }
 }
 

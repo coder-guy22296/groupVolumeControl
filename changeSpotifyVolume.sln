@@ -21,6 +21,7 @@ Global
 		{EE8A843B-060D-4FDA-9967-B1D2DD623787}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EE8A843B-060D-4FDA-9967-B1D2DD623787}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EE8A843B-060D-4FDA-9967-B1D2DD623787}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EE8A843B-060D-4FDA-9967-B1D2DD623787}.Release|Any CPU.Deploy.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,28 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using VolumeControlUtility;
-using GlobalHotkeys;
-using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Configuration;
-using System.Data;
 using System.Globalization;
 using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
-using System.Web;
-using System.Windows;
-using System.Windows.Forms;
-using System.Windows.Input;
-using GroupVolumeControl;
-using System.Threading;
 
 namespace VolumeControlUtility
 {

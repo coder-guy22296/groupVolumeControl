@@ -1,17 +1,10 @@
-﻿using VolumeControlUtility;
-using GlobalHotkeys;
-using GroupVolumeControl;
+﻿using GlobalHotkeys;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data;
-using System.Drawing;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Web.UI.WebControls;
-using System;
 using System.Management;
 using System.Threading;
 
@@ -76,7 +69,11 @@ namespace VolumeControlUtility
             //ConsoleManager.Show();
             Console.WriteLine("Process started!!!!");
             //ReloadActiveSessionList();
-            //Thread.Sleep(500);
+            do//wait for previous rebuild to complete
+            {
+                Thread.Sleep(200);
+            } while (rebuildInProgress);
+            //previous rebuild complete, now rebuild
             rebuildGroups();
 
         }
@@ -104,7 +101,7 @@ namespace VolumeControlUtility
         private void HotkeyProc(HotkeyInfo hotkeyInfo)
         {
             if (rebuildInProgress) {
-                Thread.Sleep(500);
+                Thread.Sleep(1000);
             }
 
 
@@ -144,12 +141,15 @@ namespace VolumeControlUtility
         }
         private void rebuildGroups()
         {
-            rebuildInProgress = true;
-            foreach (ProgramGroup group in Program.PGM.programGroups)
+            if (!rebuildInProgress)
             {
-                group.rebuild();
+                rebuildInProgress = true;
+                foreach (ProgramGroup group in Program.PGM.programGroups)
+                {
+                    group.rebuild();
+                }
+                rebuildInProgress = false;
             }
-            rebuildInProgress = false;
         }
 
         private void tableLayoutPanel1_Paint(object sender, PaintEventArgs e)
@@ -367,6 +367,14 @@ namespace VolumeControlUtility
         private void checkBoxWIN_CheckedChanged(object sender, EventArgs e)
         {
             
+        }
+
+        private void DefaultVolBtn_Click(object sender, EventArgs e)
+        {
+            foreach (ProgramGroup group in Program.PGM.programGroups)
+            {
+                group.setVolume(100);
+            }
         }
     }
 }
