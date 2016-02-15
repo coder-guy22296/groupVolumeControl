@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace VolumeControlUtility
 {
@@ -12,18 +10,29 @@ namespace VolumeControlUtility
         public List<ProgramGroup> programGroups = new List<ProgramGroup>();
         public int NumOfProgramGroups = 0;
 
+        /*
+            Constructor
+            */
         public ProgramGroupManager()
         {
 
         }
 
-        public void addProgramGroup(string toBeAdded)
+        /*
+            Creates a Program Group with the specified name and adds
+            the group to the Collection of Program Groups
+            */
+        public void createProgramGroup(string groupName)
         {
-            ProgramGroup TBA = new ProgramGroup(toBeAdded, 100);
-            TBA.updateVolume();
-            programGroups.Add(TBA);
+            ProgramGroup toBeAdded = new ProgramGroup(groupName, 100);
+            toBeAdded.updateVolume();
+            programGroups.Add(toBeAdded);
             updateNumOfGroups();
         }
+
+        /*
+            Adds a Program Group to the Collection
+            */
         public void addProgramGroup(ProgramGroup toBeAdded)
         {
             toBeAdded.updateVolume();
@@ -31,10 +40,31 @@ namespace VolumeControlUtility
             updateNumOfGroups();
         }
 
+        /*
+            Remove a program group based on the index of the group
+            in the Collection
+            */
+        public void removeProgramGroup(int IndexOfItemToBeRemoved)
+        {
+            programGroups.RemoveAt(IndexOfItemToBeRemoved);
+            updateNumOfGroups();
+
+        }
+
+        /*
+            Returns a specific program group based on the index of
+            the program group in the Colleciton
+            */
         public ProgramGroup getProgramGroup(int index)
         {
             return programGroups.ElementAt(index);
         }
+
+        /*
+            Returns a specific program group based on the name of
+            the group stored in the Collection or returns null
+            if not found
+            */
         public ProgramGroup getProgramGroup(string name)
         {
             foreach(ProgramGroup group in programGroups){
@@ -45,13 +75,10 @@ namespace VolumeControlUtility
             return null;
         }
 
-        public void removeProgramGroup(int IndexOfItemToBeRemoved)
-        {
-            programGroups.RemoveAt(IndexOfItemToBeRemoved);
-            updateNumOfGroups();
-
-        }
-
+        /*
+            Prints the Collection of program groups to the 
+            Console
+            */
         public void displayProgramGroups()
         {
             Console.Clear();
@@ -72,17 +99,29 @@ namespace VolumeControlUtility
             }
             Console.WriteLine("======[END]======");
         }
+
+        /*
+            Updates the number of program groups stored
+            in the Collection
+            */
         public void updateNumOfGroups()
         {
 
             NumOfProgramGroups = programGroups.Count;
         }
 
+        /*
+            Returns the number of program groups stored
+            in the Collection
+            */
         public int getNumOfProgramGroups()
         {
             return NumOfProgramGroups;
         }
 
+        /*
+            Generates a serializable object for save data storage and persistance
+            */
         public ProgramGroupManagerData generateProgramGroupManagerData()
         {
             ProgramGroupManagerData outPGMdata = new ProgramGroupManagerData();

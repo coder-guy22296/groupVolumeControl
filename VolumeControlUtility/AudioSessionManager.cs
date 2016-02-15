@@ -55,8 +55,10 @@ namespace VolumeControlUtility
 
         public List<AudioSession> getActiveAudioSessions()
         {
-            updateActiveAudioSessions();
-            return activeAudioSessions;
+            lock (activeAudioSessions) {
+                updateActiveAudioSessions();
+                return activeAudioSessions;
+            }
         }
 
         public AudioSession getAudioSession(int index)
@@ -66,7 +68,7 @@ namespace VolumeControlUtility
         public AudioSession getAudioSession(string name)
         {
             updateActiveAudioSessions();
-            foreach (AudioSession session in activeAudioSessions)
+            foreach (AudioSession session in getActiveAudioSessions())
             {
                 if (session.Process.ProcessName == name)
                 {

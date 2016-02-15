@@ -28,6 +28,9 @@ namespace VolumeControlUtility
         public GlobalHotkey hotkeyVolUp = null;//volume up
         public GlobalHotkey hotkeyVolDown = null;//volume down
 
+        /*
+            Constructor used when creating a new program group from the UI
+            */
         public ProgramGroup(string name, int volume)
         {
             groupName = name;
@@ -35,17 +38,10 @@ namespace VolumeControlUtility
             updateVolume();
             hasHotkey = false;
         }
-        //unused
-        public ProgramGroup(string name, int volume, Modifiers mods, int volUp, int volDown)
-        {
-            groupName = name;
-            hotkeyVolUp = new GlobalHotkey(mods, (Keys)volUp, Form1.ActiveForm, false);
-            hotkeyVolDown = new GlobalHotkey(mods, (Keys)volDown, Form1.ActiveForm, false);
-            setVolume(volume);
-            updateVolume();
-            hasHotkey = true;
-        }
-        //
+
+        /*
+            Constructor used when loading from file
+            */
         public ProgramGroup(string name, int volume, List<string> mods, string volUp, string volDown)
         {
             groupName = name;
@@ -56,6 +52,12 @@ namespace VolumeControlUtility
             updateVolume();
             hasHotkey = true;
         }
+
+        /*
+            This function is called with info on what hotkey was pressed,
+            if the hotkey that was pressed belongs to this group then it
+            performs the appropriate task
+            */
         public void isThisYourKotkey(HotkeyInfo hotkeyInfo)
         {
             if (!hasHotkey)
@@ -65,17 +67,23 @@ namespace VolumeControlUtility
             if (hotkeyInfo.Key == (Keys)hotkeyVolUp.Key &&
                 hotkeyInfo.Modifiers == (Modifiers)hotkeyVolUp.Modifier)
             {
-                volAsPercent += 5;
-                
+                //volAsPercent += 5;
+                setVolume(volAsPercent + 5);
+
             }
 
             if (hotkeyInfo.Key == (Keys)hotkeyVolDown.Key &&
                 hotkeyInfo.Modifiers == (Modifiers)hotkeyVolDown.Modifier)
             {
-                volAsPercent -= 5;
+                //volAsPercent -= 5;
+                setVolume(volAsPercent - 5);
             }
             updateVolume();
         }
+
+        /*
+            Sets the hotkeys based on information loaded from the save file
+            */
         public void setVolumeHotkeys(List<string> modifiers, string volumeUp, string volumeDown,  IWin32Window window)
         {
             if (hasHotkey)
@@ -89,6 +97,10 @@ namespace VolumeControlUtility
             this.hasHotkey = true;
             registerHotkey(window);
         }
+
+        /*
+            Sets the hotkeys based on selecitons from the UI
+            */
         public void setVolumeHotkeys(GlobalHotkey volumeUp, GlobalHotkey volumeDown)
         {
             if (hotkeyVolUp != null)
@@ -102,6 +114,10 @@ namespace VolumeControlUtility
             hotkeyVolDown = volumeDown;
             hasHotkey = true;
         }
+
+        /*
+            Set the volume for this group of programs
+            */
         public void setVolume(int inputVolume)
         {
             updateActiveSessions();
@@ -119,61 +135,127 @@ namespace VolumeControlUtility
             }
             updateVolume();
         }
+
+        /*
+            Get the current volume of the program group
+            */
         public int getVolume()
         {
-            updateActiveSessions(); 
+            rebuild();
             return volAsPercent;
         }
+
+        /*
+            Gets the name that has been assigned to this program
+            group
+            */
         public string getName()
         {
             return groupName;
         }
+
+        /*
+            Sets a new name for the program group
+            */
         public void rename(string newName)
         {
             groupName = newName;
         }
-        public void addAudioSession(AudioSession Session)
+
+        /*
+            Gets all the audio programs assigned to 
+            this group
+            */
+        public List<string> getAudioSessions()
         {
-            loadedAudioSessions.Add(Session);
-            numOfSessions = loadedAudioSessions.Count;
-            updateVolume();
+            lock (audioSessions)
+            {
+                return audioSessions;
+            }
         }
+
+        /*
+            Adds an audio program to the Collection of active audio programs
+            */
+        public void addAudioSession(AudioSession Session, Boolean rip)
+        {
+            lock (loadedAudioSessions)
+            {
+                loadedAudioSessions.Add(Session);
+                if(!rip)
+                {
+                    audioSessions.Add(Session.Process.ProcessName);
+                }
+                numOfSessions = loadedAudioSessions.Count;
+                updateVolume();
+            }
+        }
+
+        /*
+            Remove an audio program from the program group
+            */
         public void removeAudioSession(AudioSession Session)
         {
-            updateActiveSessions(); 
-            loadedAudioSessions.Remove(Session);
-            numOfSessions = loadedAudioSessions.Count;
+            lock (loadedAudioSessions)
+            {
+                updateActiveSessions();
+                loadedAudioSessions.Remove(Session);
+                getAudioSessions().Remove(Session.Process.ProcessName);
+                numOfSessions = loadedAudioSessions.Count;
+            }
         }
+
+        /*
+            Remove an audio program from the program group based on the 
+            name of the Process
+            */
         public void removeAudioSession(string Session)
         {
-            updateActiveSessions();
-            AudioSession targetSession = null;
-            foreach (AudioSession currentAS in loadedAudioSessions)
-            {
-                if(currentAS.Process.ProcessName == Session){
-                    targetSession = currentAS;
-                }
-            }
-            loadedAudioSessions.Remove(targetSession);
-            numOfSessions = loadedAudioSessions.Count;
-        }
-        public void updateVolume()
-        {
-            if (loadedAudioSessions != null)
-            {
+            lock (loadedAudioSessions) {
+                updateActiveSessions();
+                AudioSession targetSession = null;
                 foreach (AudioSession currentAS in loadedAudioSessions)
                 {
-                    //AudioSession ash = Program.ASM.getAudioSession(currentAS.Process.ProcessName);
-                    VolumeMixer.SetApplicationVolume(currentAS.ProcessId, (float)volAsPercent);
+                    if(currentAS.Process.ProcessName == Session){
+                        targetSession = currentAS;
+                    }
+                }
+                loadedAudioSessions.Remove(targetSession);
+                getAudioSessions().Remove(Session);
+                numOfSessions = loadedAudioSessions.Count;
+            }
+        }
+
+        /*
+            Updates the volume of all the running programs in the
+            program group
+            */
+        public void updateVolume()
+        {
+            lock(loadedAudioSessions) {
+                if (loadedAudioSessions != null)
+                {
+                    foreach (AudioSession currentAS in loadedAudioSessions)
+                    {
+                        //AudioSession ash = Program.ASM.getAudioSession(currentAS.Process.ProcessName);
+                        VolumeMixer.SetApplicationVolume(currentAS.ProcessId, (float)volAsPercent);
+                    }
                 }
             }
             
         }
+
+        /*
+            Gets the number of programs from the group that are currently running
+            */
         public int getNumOfPrograms()
         {
             return numOfSessions;
         }
 
+        /*
+            Displays the process names of the running audio programs in the group
+            */
         public void displayAudioSessions()
         {
             updateActiveSessions();
@@ -197,7 +279,9 @@ namespace VolumeControlUtility
 
             Console.WriteLine("======[END]======");
         }
-        //create a striped down object that can be saved to a json file
+
+
+        //create a serializable object that can be saved to a json file
         public ProgramGroupData generateProgramGroupData()
         {
             ProgramGroupData outPGdata = new ProgramGroupData();
@@ -228,26 +312,41 @@ namespace VolumeControlUtility
             return outPGdata;
         }
 
+        /*
+        * checks if any of the audio programs that have been assigned to this program group is running.
+        * if so, then loads that audio session into the list of active sessions
+        */
         public void updateActiveSessions()
         {
-            if (nonLoadedAudioSessions.Count > 0)
+            lock (nonLoadedAudioSessions)
             {
-                string strSession = nonLoadedAudioSessions.ElementAt(0);
-                AudioSession aSession = Program.ASM.getAudioSession(strSession);
-                if (aSession == null)
+                lock (audioSessions)
                 {
-                    //ignore
-                }
-                else
-                {
-                    addAudioSession(aSession);
-                    numOfSessions = loadedAudioSessions.Count;
-                    nonLoadedAudioSessions.Remove(strSession);
-                    updateActiveSessions();
+                    if (nonLoadedAudioSessions.Count > 0)
+                    {
+                        string strSession = nonLoadedAudioSessions.ElementAt(0);// <---- I think this is a bug and will surface if there are multiple 
+                                                                                // non running programs and the first one is not running
+                        AudioSession aSession = Program.ASM.getAudioSession(strSession);
+                        if (aSession == null)//audio session is not running
+                        {
+                            //ignore
+                        }
+                        else//audio session found, add to active audio sessions
+                        {
+                            addAudioSession(aSession,true);
+                            numOfSessions = loadedAudioSessions.Count;
+                            nonLoadedAudioSessions.Remove(strSession);
+                            updateActiveSessions();
+                        }
+                    }
                 }
             }
         }
 
+        /*
+            Registers the hotkeys assigned to this group with the operating system
+            and associates them with the programs main window
+            */
         public void registerHotkey(IWin32Window window)
         {
 
@@ -274,6 +373,10 @@ namespace VolumeControlUtility
             }
             Console.WriteLine(groupName+" HotkeysRegistered");
         }
+
+        /*
+            Unregisters the hotkeys that have been registed by this group
+            */
         public void unregisterHotkeys()
         {
 
@@ -293,25 +396,38 @@ namespace VolumeControlUtility
             Console.WriteLine(groupName + " HotkeysUNRegistered");
         }
 
+        /*
+            Update wheather the audio programs for this group are running or not
+            */
         public void rebuild()
         {
-            loadedAudioSessions.Clear();
-            nonLoadedAudioSessions.Clear();
-            this.numOfSessions = 0;
-            foreach (string strSession in audioSessions)
-                {
-                    AudioSession aSession = Program.ASM.getAudioSession(strSession);
-                    if (aSession == null)
-                    {
-                        Console.WriteLine(strSession + " is not running, so it will not be loaded into an Program Group");
-                        nonLoadedAudioSessions.Add(strSession);
-                    }
-                    else
-                    {
-                        addAudioSession(aSession);
-                    }
-                }
-            }
+            //lock (audioSessions)
+            //{
+                //lock (loadedAudioSessions)
+                //{
+                    //lock (nonLoadedAudioSessions)
+                    //{
+                        loadedAudioSessions.Clear();
+                        nonLoadedAudioSessions.Clear();
+                        this.numOfSessions = 0;
+                        for (int i = getAudioSessions().Count; i > 0; i--)
+                        {
+                            string strSession = getAudioSessions().ElementAt(i-1);
+                            AudioSession aSession = Program.ASM.getAudioSession(strSession);
+                            if (aSession == null)
+                            {
+                                Console.WriteLine(strSession + " is not running, so it will not be loaded into an Program Group");
+                                nonLoadedAudioSessions.Add(strSession);
+                            }
+                            else
+                            {
+                                addAudioSession(aSession, true);
+                            }
+                        }
+                    //}
+                //}
+            //}
         }
     }
+}
 

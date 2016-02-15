@@ -13,16 +13,8 @@ namespace VolumeControlUtility
     public partial class Form1 : Form
     {
         private List<GlobalHotkey> hotkeys = new List<GlobalHotkey>();
-        private bool rebuildInProgress = false;
         private ManagementEventWatcher MEW = new ManagementEventWatcher("SELECT TargetInstance FROM __InstanceCreationEvent WITHIN 1 WHERE TargetInstance ISA 'Win32_Process'");
-        //public event EventArrivedEventHandler ProcessStart;
-        /*
-        protected virtual void OnProcessStart(EventArgs e)
-        {
-            ConsoleManager.Show();
-            Console.WriteLine("Process started!!!!");
-        }
-        */
+
         public Form1()
         {
             InitializeComponent();
@@ -32,8 +24,6 @@ namespace VolumeControlUtility
             new TimeSpan(0, 0, 1),
             "TargetInstance ISA \"Win32_Process\"");
 
-            
-            //MEW.Query = query;
             MEW.EventArrived += new EventArrivedEventHandler(this.OnProcessStart);
             MEW.Start();
 
@@ -68,12 +58,6 @@ namespace VolumeControlUtility
         {
             //ConsoleManager.Show();
             Console.WriteLine("Process started!!!!");
-            //ReloadActiveSessionList();
-            do//wait for previous rebuild to complete
-            {
-                Thread.Sleep(200);
-            } while (rebuildInProgress);
-            //previous rebuild complete, now rebuild
             rebuildGroups();
 
         }
@@ -100,17 +84,10 @@ namespace VolumeControlUtility
 
         private void HotkeyProc(HotkeyInfo hotkeyInfo)
         {
-            if (rebuildInProgress) {
-                Thread.Sleep(1000);
-            }
-
-
-            //ConsoleManager.Show();
             Console.WriteLine("{0} : Hotkey Proc! {1}, {2}{3}", DateTime.Now.ToString("hh:MM:ss.fff"),
                                              hotkeyInfo.Key, hotkeyInfo.Modifiers, Environment.NewLine);
             if(hotkeyInfo.Key == Keys.F5)
             {
-                //unregisterHotkeys();
                 rebuildGroups();
 
             }
@@ -141,14 +118,9 @@ namespace VolumeControlUtility
         }
         private void rebuildGroups()
         {
-            if (!rebuildInProgress)
+            foreach (ProgramGroup group in Program.PGM.programGroups)
             {
-                rebuildInProgress = true;
-                foreach (ProgramGroup group in Program.PGM.programGroups)
-                {
-                    group.rebuild();
-                }
-                rebuildInProgress = false;
+                group.rebuild();
             }
         }
 
@@ -169,7 +141,7 @@ namespace VolumeControlUtility
                 ProgramGroup targetGroup = Program.PGM.programGroups.ElementAt(
                     programGroupList.SelectedIndex);
                 targetGroup.addAudioSession(Program.ASM.activeAudioSessions.ElementAt(
-                    AudioSessionList.SelectedIndex));
+                    AudioSessionList.SelectedIndex), false);
             }
             programGroupList_SelectedIndexChanged(-99, null);
         }
@@ -274,7 +246,7 @@ namespace VolumeControlUtility
         private void addGroupButton_Click(object sender, EventArgs e)
         {
 
-            Program.PGM.addProgramGroup(addGroupTextBox.Text);
+            Program.PGM.createProgramGroup(addGroupTextBox.Text);
             addGroupTextBox.Clear();
             programGroupList.Items.Clear();
             foreach (ProgramGroup group in Program.PGM.programGroups)
@@ -328,6 +300,7 @@ namespace VolumeControlUtility
             {
                 if(volUpKeystrokeDropDown.SelectedItem.ToString() == null || volDownKeystrokeDropDown.SelectedItem.ToString() == null) return;
             }catch(NullReferenceException exception){
+                Console.WriteLine(exception.Message);
                 return;
             }
             

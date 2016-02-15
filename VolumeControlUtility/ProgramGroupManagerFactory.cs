@@ -38,9 +38,9 @@ namespace VolumeControlUtility
                     }
                     else
                     {
-                        outPGM.programGroups.ElementAt(programGroupIndex).addAudioSession(aSession);
+                        outPGM.programGroups.ElementAt(programGroupIndex).addAudioSession(aSession, false);
                     }
-                    outPGM.programGroups.ElementAt(programGroupIndex).audioSessions.Add(strSession);
+                    //outPGM.programGroups.ElementAt(programGroupIndex).audioSessions.Add(strSession);
 
                 }
             }
