@@ -137,7 +137,7 @@ namespace VolumeControlUtility
             */
         public int getVolume()
         {
-            rebuild();
+            updateActiveSessions();
             return volAsPercent;
         }
 
@@ -314,7 +314,7 @@ namespace VolumeControlUtility
         */
         public void updateActiveSessions()
         {
-            lock (nonLoadedAudioSessions)
+            /*lock (nonLoadedAudioSessions)
             {
                 lock (audioSessions)
                 {
@@ -335,6 +335,24 @@ namespace VolumeControlUtility
                             updateActiveSessions();
                         }
                     }
+                }
+            }*/
+
+            loadedAudioSessions.Clear();
+            nonLoadedAudioSessions.Clear();
+            this.numOfSessions = 0;
+            for (int i = getAudioSessions().Count; i > 0; i--)
+            {
+                string strSession = getAudioSessions().ElementAt(i - 1);
+                AudioSession aSession = Program.ASM.getAudioSession(strSession);
+                if (aSession == null)
+                {
+                    Console.WriteLine(strSession + " is not running, so it will not be loaded into an Program Group");
+                    nonLoadedAudioSessions.Add(strSession);
+                }
+                else
+                {
+                    addAudioSession(aSession, true);
                 }
             }
         }
@@ -395,7 +413,7 @@ namespace VolumeControlUtility
         /*
             Update wheather the audio programs for this group are running or not
             */
-        public void rebuild()
+        /*public void rebuild()
         {
             //lock (audioSessions)
             //{
@@ -423,7 +441,7 @@ namespace VolumeControlUtility
                     //}
                 //}
             //}
-        }
+        }*/
     }
 }
 

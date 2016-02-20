@@ -120,7 +120,7 @@ namespace VolumeControlUtility
         {
             foreach (ProgramGroup group in Program.PGM.programGroups)
             {
-                group.rebuild();
+                group.updateActiveSessions();
             }
         }
 
