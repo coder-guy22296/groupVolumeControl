@@ -1,5 +1,4 @@
 ﻿/* I am not the author of this code */
-using System.Windows.Forms;
 
 namespace GlobalHotkeys
 {

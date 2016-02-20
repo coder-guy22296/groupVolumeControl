@@ -173,7 +173,7 @@ namespace VolumeControlUtility
                 {
                     programsInGroupList.Items.Add(session.Process.ProcessName);
                 }
-            }
+            
                 //*****display hotkey Box
 
                 //display currently binded hotkeys
@@ -207,7 +207,7 @@ namespace VolumeControlUtility
                     volUpKeystrokeDropDown.Text = "None Binded";
                     volDownKeystrokeDropDown.Text = "None Binded";
                 }
-            
+            }
         }
 
         private void programsInGroupList_SelectedIndexChanged(object sender, EventArgs e)
@@ -257,31 +257,37 @@ namespace VolumeControlUtility
 
         private void removeGroupButton_Click(object sender, EventArgs e)
         {
-            int toRemove = programGroupList.SelectedIndex;
-            Program.PGM.removeProgramGroup(toRemove);
-            programGroupList.Items.Clear();
-            foreach (ProgramGroup group in Program.PGM.programGroups)
+            if (programGroupList.SelectedItem != null)
             {
-                programGroupList.Items.Add(group.getName());
+                int toRemove = programGroupList.SelectedIndex;
+                Program.PGM.removeProgramGroup(toRemove);
+                programGroupList.Items.Clear();
+                foreach (ProgramGroup group in Program.PGM.programGroups)
+                {
+                    programGroupList.Items.Add(group.getName());
+                } 
             }
-        }
-
-        private void saveButton_Click(object sender, EventArgs e)
-        {
-            SecureJsonSerializer<ProgramGroupManagerData> pgmDataFile = new SecureJsonSerializer<ProgramGroupManagerData>("pgmSave.json");
-            pgmDataFile.Save(Program.PGM.generateProgramGroupManagerData());
         }
 
         private void renameGroupButton_Click(object sender, EventArgs e)
         {
-            int toRename = programGroupList.SelectedIndex;
-            Program.PGM.getProgramGroup(toRename).rename(addGroupTextBox.Text);
-            addGroupTextBox.Clear();
-            programGroupList.Items.Clear();
-            foreach (ProgramGroup group in Program.PGM.programGroups)
+            if (programGroupList.SelectedItem != null)
             {
-                programGroupList.Items.Add(group.getName());
+                int toRename = programGroupList.SelectedIndex;
+                Program.PGM.getProgramGroup(toRename).rename(addGroupTextBox.Text);
+                addGroupTextBox.Clear();
+                programGroupList.Items.Clear();
+                foreach (ProgramGroup group in Program.PGM.programGroups)
+                {
+                    programGroupList.Items.Add(group.getName());
+                } 
             }
+        }
+        
+        private void saveButton_Click(object sender, EventArgs e)
+        {
+            SecureJsonSerializer<ProgramGroupManagerData> pgmDataFile = new SecureJsonSerializer<ProgramGroupManagerData>("pgmSave.json");
+            pgmDataFile.Save(Program.PGM.generateProgramGroupManagerData());
         }
 
         private void label1_Click(object sender, EventArgs e)
@@ -296,35 +302,41 @@ namespace VolumeControlUtility
 
         private void saveKbButton_Click(object sender, EventArgs e)
         {
-            try
+            if (programGroupList.SelectedItem != null)
             {
-                if(volUpKeystrokeDropDown.SelectedItem.ToString() == null || volDownKeystrokeDropDown.SelectedItem.ToString() == null) return;
-            }catch(NullReferenceException exception){
-                Console.WriteLine(exception.Message);
-                return;
-            }
-            
-            ProgramGroup targetGroup = Program.PGM.getProgramGroup(programGroupList.SelectedIndex);
+                try
+                {
+                    if (volUpKeystrokeDropDown.SelectedItem.ToString() == null || volDownKeystrokeDropDown.SelectedItem.ToString() == null) return;
+                }
+                catch (NullReferenceException exception)
+                {
+                    Console.WriteLine(exception.Message);
+                    return;
+                }
 
-            //hotkey data
-            List<string> keyModifiers = new List<string>();
+                ProgramGroup targetGroup = Program.PGM.getProgramGroup(programGroupList.SelectedIndex);
 
-            string volUp = volUpKeystrokeDropDown.SelectedItem.ToString();
-            string volDown = volDownKeystrokeDropDown.SelectedItem.ToString();
+                //hotkey data
+                List<string> keyModifiers = new List<string>();
 
-            //store the keystroke modifiers
-            if(checkBoxCTRL.Checked){
-                keyModifiers.Add(Modifiers.Ctrl.ToString());
+                string volUp = volUpKeystrokeDropDown.SelectedItem.ToString();
+                string volDown = volDownKeystrokeDropDown.SelectedItem.ToString();
+
+                //store the keystroke modifiers
+                if (checkBoxCTRL.Checked)
+                {
+                    keyModifiers.Add(Modifiers.Ctrl.ToString());
+                }
+                if (checkBoxALT.Checked)
+                {
+                    keyModifiers.Add(Modifiers.Alt.ToString());
+                }
+                if (checkBoxWIN.Checked)
+                {
+                    keyModifiers.Add(Modifiers.Win.ToString());
+                }
+                targetGroup.setVolumeHotkeys(keyModifiers, volUp, volDown, this); 
             }
-            if (checkBoxALT.Checked)
-            {
-                keyModifiers.Add(Modifiers.Alt.ToString());
-            }
-            if (checkBoxWIN.Checked)
-            {
-                keyModifiers.Add(Modifiers.Win.ToString());
-            }
-            targetGroup.setVolumeHotkeys(keyModifiers, volUp, volDown, this);
         }
 
         private void checkBoxCTRL_CheckedChanged(object sender, EventArgs e)

@@ -26,6 +26,7 @@
     <MapFileExtensions>true</MapFileExtensions>
     <TargetCulture>en-US</TargetCulture>
     <PublisherName>coderguyDev</PublisherName>
+    <AutorunEnabled>true</AutorunEnabled>
     <ApplicationRevision>0</ApplicationRevision>
     <ApplicationVersion>0.9.3.0</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
