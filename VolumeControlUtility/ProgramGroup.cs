@@ -137,7 +137,7 @@ namespace VolumeControlUtility
             */
         public int getVolume()
         {
-            rebuild();
+            updateActiveSessions();
             return volAsPercent;
         }
 
@@ -314,27 +314,21 @@ namespace VolumeControlUtility
         */
         public void updateActiveSessions()
         {
-            lock (nonLoadedAudioSessions)
+            loadedAudioSessions.Clear();
+            nonLoadedAudioSessions.Clear();
+            this.numOfSessions = 0;
+            for (int i = getAudioSessions().Count; i > 0; i--)
             {
-                lock (audioSessions)
+                string strSession = getAudioSessions().ElementAt(i - 1);
+                AudioSession aSession = Program.ASM.getAudioSession(strSession);
+                if (aSession == null)
                 {
-                    if (nonLoadedAudioSessions.Count > 0)
-                    {
-                        string strSession = nonLoadedAudioSessions.ElementAt(0);// <---- I think this is a bug and will surface if there are multiple 
-                                                                                // non running programs and the first one is not running
-                        AudioSession aSession = Program.ASM.getAudioSession(strSession);
-                        if (aSession == null)//audio session is not running
-                        {
-                            //ignore
-                        }
-                        else//audio session found, add to active audio sessions
-                        {
-                            addAudioSession(aSession,true);
-                            numOfSessions = loadedAudioSessions.Count;
-                            nonLoadedAudioSessions.Remove(strSession);
-                            updateActiveSessions();
-                        }
-                    }
+                    Console.WriteLine(strSession + " is not running, so it will not be loaded into an Program Group");
+                    nonLoadedAudioSessions.Add(strSession);
+                }
+                else
+                {
+                    addAudioSession(aSession, true);
                 }
             }
         }
@@ -390,39 +384,6 @@ namespace VolumeControlUtility
                 MessageBox.Show(exc.Message);
             }
             Console.WriteLine(groupName + " HotkeysUNRegistered");
-        }
-
-        /*
-            Update wheather the audio programs for this group are running or not
-            */
-        public void rebuild()
-        {
-            //lock (audioSessions)
-            //{
-                //lock (loadedAudioSessions)
-                //{
-                    //lock (nonLoadedAudioSessions)
-                    //{
-                        loadedAudioSessions.Clear();
-                        nonLoadedAudioSessions.Clear();
-                        this.numOfSessions = 0;
-                        for (int i = getAudioSessions().Count; i > 0; i--)
-                        {
-                            string strSession = getAudioSessions().ElementAt(i-1);
-                            AudioSession aSession = Program.ASM.getAudioSession(strSession);
-                            if (aSession == null)
-                            {
-                                Console.WriteLine(strSession + " is not running, so it will not be loaded into an Program Group");
-                                nonLoadedAudioSessions.Add(strSession);
-                            }
-                            else
-                            {
-                                addAudioSession(aSession, true);
-                            }
-                        }
-                    //}
-                //}
-            //}
         }
     }
 }
