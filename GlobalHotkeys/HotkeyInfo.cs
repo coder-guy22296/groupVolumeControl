@@ -18,6 +18,12 @@ namespace GlobalHotkeys
             Key = (Keys)((lpInt >> 16) & 0xFFFF);
             Modifiers = (Modifiers)(lpInt & 0xFFFF);
         }
+        private HotkeyInfo(IntPtr wParam, bool something)
+        {
+            var lpInt = (int)wParam + 24;
+            Key = (Keys)((lpInt >> 16) & 0xFFFF);
+            Modifiers = (Modifiers)(lpInt & 0xFFFF);
+        }
 
         public static HotkeyInfo GetFromMessage(Message m)
         {
@@ -27,6 +33,16 @@ namespace GlobalHotkeys
         public static bool IsHotkeyMessage(Message m)
         {
             return m.Msg == Win32.WM_HOTKEY_MSG_ID;
+        }
+
+        public static HotkeyInfo GetKeyPressFromMessage(Message m)
+        {
+            return !IsKeyPressMessage(m) ? null : new HotkeyInfo(m.WParam, true);
+        }
+
+        private static bool IsKeyPressMessage(Message m)
+        {
+            return m.Msg == 0x101;
         }
     }
 }

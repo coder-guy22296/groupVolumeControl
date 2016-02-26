@@ -1,6 +1,6 @@
 ﻿namespace VolumeControlUtility
 {
-    partial class Form1
+    partial class MainUI
     {
         /// <summary>
         /// Required designer variable.
@@ -42,8 +42,8 @@
             this.saveButton = new System.Windows.Forms.Button();
             this.renameGroupButton = new System.Windows.Forms.Button();
             this.infoBox = new System.Windows.Forms.GroupBox();
-            this.volDownKeystrokeDropDown = new System.Windows.Forms.ComboBox();
-            this.volUpKeystrokeDropDown = new System.Windows.Forms.ComboBox();
+            this.setVolumeDown = new System.Windows.Forms.Button();
+            this.setVolumeUp = new System.Windows.Forms.Button();
             this.checkBoxWIN = new System.Windows.Forms.CheckBox();
             this.checkBoxALT = new System.Windows.Forms.CheckBox();
             this.checkBoxCTRL = new System.Windows.Forms.CheckBox();
@@ -52,6 +52,8 @@
             this.label1 = new System.Windows.Forms.Label();
             this.saveKbButton = new System.Windows.Forms.Button();
             this.DefaultVolBtn = new System.Windows.Forms.Button();
+            this.volUpHotkey = new System.Windows.Forms.Label();
+            this.volDownHotkey = new System.Windows.Forms.Label();
             this.groupBox1.SuspendLayout();
             this.programBox.SuspendLayout();
             this.groupBox3.SuspendLayout();
@@ -206,8 +208,10 @@
             // 
             // infoBox
             // 
-            this.infoBox.Controls.Add(this.volDownKeystrokeDropDown);
-            this.infoBox.Controls.Add(this.volUpKeystrokeDropDown);
+            this.infoBox.Controls.Add(this.volDownHotkey);
+            this.infoBox.Controls.Add(this.volUpHotkey);
+            this.infoBox.Controls.Add(this.setVolumeDown);
+            this.infoBox.Controls.Add(this.setVolumeUp);
             this.infoBox.Controls.Add(this.checkBoxWIN);
             this.infoBox.Controls.Add(this.checkBoxALT);
             this.infoBox.Controls.Add(this.checkBoxCTRL);
@@ -218,31 +222,39 @@
             this.infoBox.Location = new System.Drawing.Point(236, 86);
             this.infoBox.Name = "infoBox";
             this.infoBox.RightToLeft = System.Windows.Forms.RightToLeft.No;
-            this.infoBox.Size = new System.Drawing.Size(240, 170);
+            this.infoBox.Size = new System.Drawing.Size(321, 170);
             this.infoBox.TabIndex = 27;
             this.infoBox.TabStop = false;
             this.infoBox.Text = "Details";
             this.infoBox.Enter += new System.EventHandler(this.infoBox_Enter);
             // 
-            // volDownKeystrokeDropDown
+            // setVolumeDown
             // 
-            this.volDownKeystrokeDropDown.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.Suggest;
-            this.volDownKeystrokeDropDown.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
-            this.volDownKeystrokeDropDown.FormattingEnabled = true;
-            this.volDownKeystrokeDropDown.Location = new System.Drawing.Point(112, 111);
-            this.volDownKeystrokeDropDown.Name = "volDownKeystrokeDropDown";
-            this.volDownKeystrokeDropDown.Size = new System.Drawing.Size(121, 21);
-            this.volDownKeystrokeDropDown.TabIndex = 36;
+            this.setVolumeDown.BackColor = System.Drawing.Color.Orange;
+            this.setVolumeDown.FlatAppearance.BorderColor = System.Drawing.Color.Gray;
+            this.setVolumeDown.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(192)))), ((int)(((byte)(128)))));
+            this.setVolumeDown.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.setVolumeDown.Location = new System.Drawing.Point(187, 109);
+            this.setVolumeDown.Name = "setVolumeDown";
+            this.setVolumeDown.Size = new System.Drawing.Size(114, 23);
+            this.setVolumeDown.TabIndex = 35;
+            this.setVolumeDown.Text = "Set Volume Down";
+            this.setVolumeDown.UseVisualStyleBackColor = false;
+            this.setVolumeDown.Click += new System.EventHandler(this.setVolumeDown_Click);
             // 
-            // volUpKeystrokeDropDown
+            // setVolumeUp
             // 
-            this.volUpKeystrokeDropDown.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.Suggest;
-            this.volUpKeystrokeDropDown.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
-            this.volUpKeystrokeDropDown.FormattingEnabled = true;
-            this.volUpKeystrokeDropDown.Location = new System.Drawing.Point(112, 84);
-            this.volUpKeystrokeDropDown.Name = "volUpKeystrokeDropDown";
-            this.volUpKeystrokeDropDown.Size = new System.Drawing.Size(121, 21);
-            this.volUpKeystrokeDropDown.TabIndex = 35;
+            this.setVolumeUp.BackColor = System.Drawing.Color.Orange;
+            this.setVolumeUp.FlatAppearance.BorderColor = System.Drawing.Color.Gray;
+            this.setVolumeUp.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(192)))), ((int)(((byte)(128)))));
+            this.setVolumeUp.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.setVolumeUp.Location = new System.Drawing.Point(187, 82);
+            this.setVolumeUp.Name = "setVolumeUp";
+            this.setVolumeUp.Size = new System.Drawing.Size(114, 23);
+            this.setVolumeUp.TabIndex = 29;
+            this.setVolumeUp.Text = "Set Volume Up";
+            this.setVolumeUp.UseVisualStyleBackColor = false;
+            this.setVolumeUp.Click += new System.EventHandler(this.setVolumeUp_Click);
             // 
             // checkBoxWIN
             // 
@@ -314,7 +326,7 @@
             this.saveKbButton.FlatAppearance.BorderColor = System.Drawing.Color.Gray;
             this.saveKbButton.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(192)))), ((int)(((byte)(128)))));
             this.saveKbButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.saveKbButton.Location = new System.Drawing.Point(128, 141);
+            this.saveKbButton.Location = new System.Drawing.Point(209, 141);
             this.saveKbButton.Name = "saveKbButton";
             this.saveKbButton.Size = new System.Drawing.Size(106, 23);
             this.saveKbButton.TabIndex = 26;
@@ -336,7 +348,25 @@
             this.DefaultVolBtn.UseVisualStyleBackColor = false;
             this.DefaultVolBtn.Click += new System.EventHandler(this.DefaultVolBtn_Click);
             // 
-            // Form1
+            // volUpHotkey
+            // 
+            this.volUpHotkey.AutoSize = true;
+            this.volUpHotkey.Location = new System.Drawing.Point(109, 87);
+            this.volUpHotkey.Name = "volUpHotkey";
+            this.volUpHotkey.Size = new System.Drawing.Size(36, 13);
+            this.volUpHotkey.TabIndex = 36;
+            this.volUpHotkey.Text = "volUP";
+            // 
+            // volDownHotkey
+            // 
+            this.volDownHotkey.AutoSize = true;
+            this.volDownHotkey.Location = new System.Drawing.Point(109, 114);
+            this.volDownHotkey.Name = "volDownHotkey";
+            this.volDownHotkey.Size = new System.Drawing.Size(56, 13);
+            this.volDownHotkey.TabIndex = 37;
+            this.volDownHotkey.Text = "volDOWN";
+            // 
+            // MainUI
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -355,7 +385,7 @@
             this.Controls.Add(this.removeButton);
             this.Controls.Add(this.addButton);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
-            this.Name = "Form1";
+            this.Name = "MainUI";
             this.Text = "volume control";
             this.Load += new System.EventHandler(this.Form1_Load);
             this.groupBox1.ResumeLayout(false);
@@ -391,9 +421,11 @@
         private System.Windows.Forms.CheckBox checkBoxALT;
         private System.Windows.Forms.CheckBox checkBoxCTRL;
         private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.ComboBox volDownKeystrokeDropDown;
-        private System.Windows.Forms.ComboBox volUpKeystrokeDropDown;
         private System.Windows.Forms.Button DefaultVolBtn;
+        private System.Windows.Forms.Button setVolumeDown;
+        private System.Windows.Forms.Button setVolumeUp;
+        private System.Windows.Forms.Label volDownHotkey;
+        private System.Windows.Forms.Label volUpHotkey;
     }
 }
 

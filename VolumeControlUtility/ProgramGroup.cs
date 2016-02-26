@@ -23,6 +23,7 @@ namespace VolumeControlUtility
         //
         public GlobalHotkey hotkeyVolUp = null;//volume up
         public GlobalHotkey hotkeyVolDown = null;//volume down
+        private bool hotkeyPendingRegistration;
 
         /*
             Constructor used when creating a new program group from the UI
@@ -46,7 +47,10 @@ namespace VolumeControlUtility
             this.mods = mods;
             setVolume(volume);
             updateVolume();
-            hasHotkey = true;
+            if (!mods.Any() || volUp != "None" || volDown != "None")
+                hasHotkey = true;
+            else
+                hasHotkey = false;
         }
 
         /*
@@ -78,24 +82,83 @@ namespace VolumeControlUtility
         }
 
         /*
-            Sets the hotkeys based on information loaded from the save file
+            Sets the hotkeys based on selections from the UI *Depreicated*
             */
         public void setVolumeHotkeys(List<string> modifiers, string volumeUp, string volumeDown,  IWin32Window window)
         {
             if (hasHotkey)
             {
-                hotkeyVolUp.Unregister();
-                hotkeyVolDown.Unregister();
+                unregisterHotkeys();
             }
             this.volumeUp = volumeUp;
             this.volumeDown = volumeDown;
             this.mods = modifiers;
-            this.hasHotkey = true;
+            hotkeyPendingRegistration = true;
             registerHotkey(window);
         }
 
         /*
-            Sets the hotkeys based on selecitons from the UI
+            Sets the volume up hotkey for the program group without
+            registering the hotkey
+            */
+        public void setVolumeUpHotkey(string volumeUp)
+        {
+            if (hasHotkey)
+            {
+                unregisterHotkeys();
+            }
+            this.volumeUp = volumeUp;
+            hotkeyPendingRegistration = true;
+        }
+
+        /*
+            Sets the volume down hotkey for the program group without
+            registering the hotkey
+            */
+        public void setVolumeDownHotkey(string volumeDown)
+        {
+            if (hasHotkey)
+            {
+                unregisterHotkeys();
+            }
+            this.volumeDown = volumeDown;
+            hotkeyPendingRegistration = true;
+        }
+
+        /*
+            Sets the modifiers for the program group's hotkeys without
+            registering the hotkey
+            */
+        public void setVolumeHotkeyModifiers(List<string> modifiers)
+        {
+            if (hasHotkey)
+            {
+                unregisterHotkeys();
+            }
+            this.mods = modifiers;
+            hotkeyPendingRegistration = true;
+        }
+
+        /*
+            Gets the name of the hotkey assigned to increase the volume for 
+            the program group
+            */
+        public string getVolumeUpHotkey()
+        {
+            return volumeUp;
+        }
+
+        /*
+            Gets the name of the hotkey assigned to decrease the volume for 
+            the program group
+            */
+        public string getVolumeDownHotkey()
+        {
+            return volumeDown;
+        }
+
+        /*
+            Sets the hotkeys using global hotkey objects *Depreciated*
             */
         public void setVolumeHotkeys(GlobalHotkey volumeUp, GlobalHotkey volumeDown)
         {
@@ -340,13 +403,23 @@ namespace VolumeControlUtility
         public void registerHotkey(IWin32Window window)
         {
 
-            if (!hasHotkey)
+            if (!hasHotkey && !hotkeyPendingRegistration)
             {
                 return;
             }
+
+            Keys volUpKey = Keys.None;
+            Keys volDownKey = Keys.None;
             //convert the Keys and Modifiers into a useable form
-            Keys volUpKey = (Keys)Enum.Parse(typeof(Keys), volumeUp);
-            Keys volDownKey = (Keys)Enum.Parse(typeof(Keys), volumeDown);
+            if (volumeUp != "None" && volumeUp != null)
+            {
+                volUpKey = (Keys)Enum.Parse(typeof(Keys), volumeUp);
+            }
+            if (volumeDown != "None" && volumeDown != null)
+            {
+                volDownKey = (Keys)Enum.Parse(typeof(Keys), volumeDown);
+            }
+                
             Modifiers modifiers = Modifiers.NoMod;
             foreach(string keyModifier in mods){
                 modifiers |= (Modifiers)Enum.Parse(typeof(Modifiers), keyModifier); 
@@ -354,8 +427,16 @@ namespace VolumeControlUtility
             //create the hotkeys from hotkey data and register them with the system
             try
             {
-                hotkeyVolUp = new GlobalHotkey(modifiers, volUpKey, window, true);
-                hotkeyVolDown = new GlobalHotkey(modifiers, volDownKey, window, true);
+                if (volumeUp != "None")
+                {
+                    hotkeyVolUp = new GlobalHotkey(modifiers, volUpKey, window, true);
+                }
+                if (volumeDown != "None")
+                {
+                    hotkeyVolDown = new GlobalHotkey(modifiers, volDownKey, window, true);
+                }
+                hasHotkey = true;
+                hotkeyPendingRegistration = false;
             }
             catch (GlobalHotkeyException exc)
             {
@@ -378,6 +459,7 @@ namespace VolumeControlUtility
             {
                 hotkeyVolUp.Dispose();
                 hotkeyVolDown.Dispose();
+                hasHotkey = false;
             }
             catch (GlobalHotkeyException exc)
             {
