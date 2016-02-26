@@ -10,12 +10,12 @@ using System.Threading;
 
 namespace VolumeControlUtility
 {
-    public partial class Form1 : Form
+    public partial class MainUI : Form
     {
         private List<GlobalHotkey> hotkeys = new List<GlobalHotkey>();
         private ManagementEventWatcher MEW = new ManagementEventWatcher("SELECT TargetInstance FROM __InstanceCreationEvent WITHIN 1 WHERE TargetInstance ISA 'Win32_Process'");
 
-        public Form1()
+        public MainUI()
         {
             InitializeComponent();
 
@@ -36,7 +36,7 @@ namespace VolumeControlUtility
             foreach (AudioSession session in Program.ASM.getActiveAudioSessions())
             {
                 AudioSessionList.Items.Add(session.Process.ProcessName + " - " + session.State);
-            }
+            }/*
             //add all the hotkeys to the drop down
             Array itemValues = System.Enum.GetValues(typeof(Keys));
             Array itemNames = System.Enum.GetNames(typeof(Keys));
@@ -49,7 +49,7 @@ namespace VolumeControlUtility
             {
                 ListItem item = new ListItem(itemNames.GetValue(i).ToString(), itemValues.GetValue(i).ToString());
                 volDownKeystrokeDropDown.Items.Add(item);
-            }
+            }*/
             registerHotkeys();
             Closing += Form1Closing;
         }
@@ -77,6 +77,10 @@ namespace VolumeControlUtility
 
         protected override void WndProc(ref Message m)
         {
+            if (m.Msg == Win32.WM_HOTKEY_MSG_ID)
+            {
+                Console.WriteLine(m.ToString());
+            }
             var hotkeyInfo = HotkeyInfo.GetFromMessage(m);
             if (hotkeyInfo != null) HotkeyProc(hotkeyInfo);
             base.WndProc(ref m);
@@ -177,14 +181,14 @@ namespace VolumeControlUtility
                 //*****display hotkey Box
 
                 //display currently binded hotkeys
-                ProgramGroup target = Program.PGM.getProgramGroup(programGroupList.SelectedIndex);
+                ProgramGroup targetGroup = Program.PGM.getProgramGroup(programGroupList.SelectedIndex);
 
                 checkBoxCTRL.Checked = false;
                 checkBoxALT.Checked = false;
                 checkBoxWIN.Checked = false;
-                if (target.hasHotkey)
+                if (targetGroup.hasHotkey)
                 {
-                    foreach (string modifiers in target.mods)
+                    foreach (string modifiers in targetGroup.mods)
                     {
                         switch (modifiers)
                         {
@@ -199,13 +203,13 @@ namespace VolumeControlUtility
                                 break;
                         }
                     }
-                    volUpKeystrokeDropDown.Text = target.volumeUp;
-                    volDownKeystrokeDropDown.Text = target.volumeDown;
+                    this.volUpHotkey.Text = targetGroup.getVolumeUpHotkey();
+                    this.volDownHotkey.Text = targetGroup.getVolumeDownHotkey();
                 }
                 else
                 {
-                    volUpKeystrokeDropDown.Text = "None Binded";
-                    volDownKeystrokeDropDown.Text = "None Binded";
+                    this.volUpHotkey.Text = "None Binded";
+                    this.volDownHotkey.Text = "None Binded";
                 }
             }
         }
@@ -304,23 +308,12 @@ namespace VolumeControlUtility
         {
             if (programGroupList.SelectedItem != null)
             {
-                try
-                {
-                    if (volUpKeystrokeDropDown.SelectedItem.ToString() == null || volDownKeystrokeDropDown.SelectedItem.ToString() == null) return;
-                }
-                catch (NullReferenceException exception)
-                {
-                    Console.WriteLine(exception.Message);
-                    return;
-                }
-
                 ProgramGroup targetGroup = Program.PGM.getProgramGroup(programGroupList.SelectedIndex);
+
+                targetGroup.unregisterHotkeys();
 
                 //hotkey data
                 List<string> keyModifiers = new List<string>();
-
-                string volUp = volUpKeystrokeDropDown.SelectedItem.ToString();
-                string volDown = volDownKeystrokeDropDown.SelectedItem.ToString();
 
                 //store the keystroke modifiers
                 if (checkBoxCTRL.Checked)
@@ -335,7 +328,8 @@ namespace VolumeControlUtility
                 {
                     keyModifiers.Add(Modifiers.Win.ToString());
                 }
-                targetGroup.setVolumeHotkeys(keyModifiers, volUp, volDown, this); 
+                targetGroup.setVolumeHotkeyModifiers(keyModifiers);
+                targetGroup.registerHotkey(this);
             }
         }
 
@@ -360,6 +354,24 @@ namespace VolumeControlUtility
             {
                 group.setVolume(100);
             }
+        }
+
+        private void setVolumeUp_Click(object sender, EventArgs e)
+        {
+            ProgramGroup targetGroup = Program.PGM.getProgramGroup(programGroupList.SelectedIndex);
+            Form prompt = new KeybindingPrompt(targetGroup, "Up");
+            prompt.ShowDialog();
+            this.volUpHotkey.Text = targetGroup.getVolumeUpHotkey();
+            saveKbButton_Click(null, null);
+        }
+
+        private void setVolumeDown_Click(object sender, EventArgs e)
+        {
+            ProgramGroup targetGroup = Program.PGM.getProgramGroup(programGroupList.SelectedIndex);
+            Form prompt = new KeybindingPrompt(targetGroup, "Down");
+            prompt.ShowDialog();
+            this.volDownHotkey.Text = targetGroup.getVolumeDownHotkey();
+            saveKbButton_Click(null, null);
         }
     }
 }

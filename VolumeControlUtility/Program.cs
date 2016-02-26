@@ -30,7 +30,7 @@ namespace VolumeControlUtility
                 PGM = (new ProgramGroupManagerFactory().getProgramGroupManager(pgmDataFile.Load()));
             }
 
-            Application.Run(new Form1());
+            Application.Run(new MainUI());
             /*
             string proceed = "y";
             do
