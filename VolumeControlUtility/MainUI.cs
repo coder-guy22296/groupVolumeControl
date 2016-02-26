@@ -103,8 +103,19 @@ namespace VolumeControlUtility
                 }
 
             }
+            updateDisplayedVolume();
 
         }
+
+        private void updateDisplayedVolume()
+        {
+            if (programGroupList.SelectedItem != null)
+            {
+                ProgramGroup targetGroup = Program.PGM.getProgramGroup(programGroupList.SelectedIndex);
+                this.curVolume.Text = targetGroup.getVolume().ToString() + "%";
+            }
+        }
+
         private void registerHotkeys()
         {
             foreach (ProgramGroup group in Program.PGM.programGroups)
@@ -179,10 +190,13 @@ namespace VolumeControlUtility
                 }
             
                 //*****display hotkey Box
-
-                //display currently binded hotkeys
                 ProgramGroup targetGroup = Program.PGM.getProgramGroup(programGroupList.SelectedIndex);
 
+                //display volume
+                this.curVolume.Text = targetGroup.getVolume().ToString() + "%";
+
+
+                //display currently binded hotkeys
                 checkBoxCTRL.Checked = false;
                 checkBoxALT.Checked = false;
                 checkBoxWIN.Checked = false;
@@ -354,6 +368,7 @@ namespace VolumeControlUtility
             {
                 group.setVolume(100);
             }
+            updateDisplayedVolume();
         }
 
         private void setVolumeUp_Click(object sender, EventArgs e)

@@ -42,6 +42,8 @@
             this.saveButton = new System.Windows.Forms.Button();
             this.renameGroupButton = new System.Windows.Forms.Button();
             this.infoBox = new System.Windows.Forms.GroupBox();
+            this.volDownHotkey = new System.Windows.Forms.Label();
+            this.volUpHotkey = new System.Windows.Forms.Label();
             this.setVolumeDown = new System.Windows.Forms.Button();
             this.setVolumeUp = new System.Windows.Forms.Button();
             this.checkBoxWIN = new System.Windows.Forms.CheckBox();
@@ -52,8 +54,8 @@
             this.label1 = new System.Windows.Forms.Label();
             this.saveKbButton = new System.Windows.Forms.Button();
             this.DefaultVolBtn = new System.Windows.Forms.Button();
-            this.volUpHotkey = new System.Windows.Forms.Label();
-            this.volDownHotkey = new System.Windows.Forms.Label();
+            this.label4 = new System.Windows.Forms.Label();
+            this.curVolume = new System.Windows.Forms.Label();
             this.groupBox1.SuspendLayout();
             this.programBox.SuspendLayout();
             this.groupBox3.SuspendLayout();
@@ -208,6 +210,8 @@
             // 
             // infoBox
             // 
+            this.infoBox.Controls.Add(this.curVolume);
+            this.infoBox.Controls.Add(this.label4);
             this.infoBox.Controls.Add(this.volDownHotkey);
             this.infoBox.Controls.Add(this.volUpHotkey);
             this.infoBox.Controls.Add(this.setVolumeDown);
@@ -222,11 +226,29 @@
             this.infoBox.Location = new System.Drawing.Point(236, 86);
             this.infoBox.Name = "infoBox";
             this.infoBox.RightToLeft = System.Windows.Forms.RightToLeft.No;
-            this.infoBox.Size = new System.Drawing.Size(321, 170);
+            this.infoBox.Size = new System.Drawing.Size(321, 218);
             this.infoBox.TabIndex = 27;
             this.infoBox.TabStop = false;
             this.infoBox.Text = "Details";
             this.infoBox.Enter += new System.EventHandler(this.infoBox_Enter);
+            // 
+            // volDownHotkey
+            // 
+            this.volDownHotkey.AutoSize = true;
+            this.volDownHotkey.Location = new System.Drawing.Point(109, 114);
+            this.volDownHotkey.Name = "volDownHotkey";
+            this.volDownHotkey.Size = new System.Drawing.Size(56, 13);
+            this.volDownHotkey.TabIndex = 37;
+            this.volDownHotkey.Text = "volDOWN";
+            // 
+            // volUpHotkey
+            // 
+            this.volUpHotkey.AutoSize = true;
+            this.volUpHotkey.Location = new System.Drawing.Point(109, 87);
+            this.volUpHotkey.Name = "volUpHotkey";
+            this.volUpHotkey.Size = new System.Drawing.Size(36, 13);
+            this.volUpHotkey.TabIndex = 36;
+            this.volUpHotkey.Text = "volUP";
             // 
             // setVolumeDown
             // 
@@ -326,7 +348,7 @@
             this.saveKbButton.FlatAppearance.BorderColor = System.Drawing.Color.Gray;
             this.saveKbButton.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(192)))), ((int)(((byte)(128)))));
             this.saveKbButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.saveKbButton.Location = new System.Drawing.Point(209, 141);
+            this.saveKbButton.Location = new System.Drawing.Point(209, 189);
             this.saveKbButton.Name = "saveKbButton";
             this.saveKbButton.Size = new System.Drawing.Size(106, 23);
             this.saveKbButton.TabIndex = 26;
@@ -348,23 +370,23 @@
             this.DefaultVolBtn.UseVisualStyleBackColor = false;
             this.DefaultVolBtn.Click += new System.EventHandler(this.DefaultVolBtn_Click);
             // 
-            // volUpHotkey
+            // label4
             // 
-            this.volUpHotkey.AutoSize = true;
-            this.volUpHotkey.Location = new System.Drawing.Point(109, 87);
-            this.volUpHotkey.Name = "volUpHotkey";
-            this.volUpHotkey.Size = new System.Drawing.Size(36, 13);
-            this.volUpHotkey.TabIndex = 36;
-            this.volUpHotkey.Text = "volUP";
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point(21, 189);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(85, 13);
+            this.label4.TabIndex = 38;
+            this.label4.Text = "Current Volume: ";
             // 
-            // volDownHotkey
+            // curVolume
             // 
-            this.volDownHotkey.AutoSize = true;
-            this.volDownHotkey.Location = new System.Drawing.Point(109, 114);
-            this.volDownHotkey.Name = "volDownHotkey";
-            this.volDownHotkey.Size = new System.Drawing.Size(56, 13);
-            this.volDownHotkey.TabIndex = 37;
-            this.volDownHotkey.Text = "volDOWN";
+            this.curVolume.AutoSize = true;
+            this.curVolume.Location = new System.Drawing.Point(112, 189);
+            this.curVolume.Name = "curVolume";
+            this.curVolume.Size = new System.Drawing.Size(56, 13);
+            this.curVolume.TabIndex = 39;
+            this.curVolume.Text = "Unknown ";
             // 
             // MainUI
             // 
@@ -426,6 +448,8 @@
         private System.Windows.Forms.Button setVolumeUp;
         private System.Windows.Forms.Label volDownHotkey;
         private System.Windows.Forms.Label volUpHotkey;
+        private System.Windows.Forms.Label curVolume;
+        private System.Windows.Forms.Label label4;
     }
 }
 
