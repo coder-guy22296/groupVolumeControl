@@ -1,17 +1,41 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <ClassDiagram MajorVersion="1" MinorVersion="1">
   <Class Name="VolumeControlUtility.ProgramGroup">
-    <Position X="3.5" Y="0.5" Width="2.75" />
+    <Position X="4.75" Y="0.5" Width="2.75" />
     <TypeIdentifier>
-      <HashCode>AACIAQIACIAAEAQAACgIAAAAHAgIGAAAAggkggAgIAQ=</HashCode>
+      <HashCode>AACYASIACIAAEAQAACwIAAAIHAgIGAACAggkggAAIAU=</HashCode>
       <FileName>ProgramGroup.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="VolumeControlUtility.ProgramGroupManager">
-    <Position X="0.5" Y="0.5" Width="2.25" />
+    <Position X="0.5" Y="0.5" Width="2.75" />
     <TypeIdentifier>
       <HashCode>AACAAgAAAAAAAQABAAASAAAAAAAAAAAAAAABQAAEAIA=</HashCode>
       <FileName>ProgramGroupManager.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsCollectionAssociation>
+      <Field Name="programGroups" />
+    </ShowAsCollectionAssociation>
+  </Class>
+  <Class Name="VolumeControlUtility.ProgramGroupData">
+    <Position X="8" Y="0.5" Width="1.75" />
+    <TypeIdentifier>
+      <HashCode>AAAAAQAAAAAAEAAAACgAAAAAGAAAAAAAAgAAAAAAAAQ=</HashCode>
+      <FileName>ProgramGroupData.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VolumeControlUtility.ProgramGroupManagerData">
+    <Position X="0.5" Y="6.25" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAEAAA=</HashCode>
+      <FileName>ProgramGroupManagerData.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VolumeControlUtility.ProgramGroupManagerFactory">
+    <Position X="0.5" Y="4.25" Width="2.5" />
+    <TypeIdentifier>
+      <HashCode>ACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAA=</HashCode>
+      <FileName>ProgramGroupManagerFactory.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Font Name="Segoe UI" Size="9" />
