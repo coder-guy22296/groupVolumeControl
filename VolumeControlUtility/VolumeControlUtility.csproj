@@ -107,6 +107,9 @@
     <Compile Include="MainUI.Designer.cs">
       <DependentUpon>MainUI.cs</DependentUpon>
     </Compile>
+    <Compile Include="DepthHiarchy.xaml.cs">
+      <DependentUpon>DepthHiarchy.xaml</DependentUpon>
+    </Compile>
     <Compile Include="newUI-mockup.xaml.cs">
       <DependentUpon>newUI-mockup.xaml</DependentUpon>
     </Compile>
@@ -206,6 +209,10 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
+    <Page Include="DepthHiarchy.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="newUI-mockup.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
