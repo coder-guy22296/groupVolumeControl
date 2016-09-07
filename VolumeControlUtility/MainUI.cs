@@ -27,6 +27,8 @@ namespace VolumeControlUtility
             MEW.EventArrived += new EventArrivedEventHandler(this.OnProcessStart);
             MEW.Start();
 
+            this.infoBox.Visible = false;
+
             hotkeys.Add(new GlobalHotkey(Modifiers.NoMod, Keys.F5, this, true));
 
             foreach (ProgramGroup group in Program.PGM.programGroups)
@@ -176,6 +178,7 @@ namespace VolumeControlUtility
         {
             if (programGroupList.SelectedItem != null)
             {
+                this.infoBox.Visible = true;
                 programBox.Name = programGroupList.SelectedItem.ToString();
                 programBox.Text = programGroupList.SelectedItem.ToString();
 
@@ -373,20 +376,26 @@ namespace VolumeControlUtility
 
         private void setVolumeUp_Click(object sender, EventArgs e)
         {
-            ProgramGroup targetGroup = Program.PGM.getProgramGroup(programGroupList.SelectedIndex);
-            Form prompt = new KeybindingPrompt(targetGroup, "Up");
-            prompt.ShowDialog();
-            this.volUpHotkey.Text = targetGroup.getVolumeUpHotkey();
-            saveKbButton_Click(null, null);
+            if (programGroupList.SelectedIndex != -1)
+            {
+                ProgramGroup targetGroup = Program.PGM.getProgramGroup(programGroupList.SelectedIndex);
+                Form prompt = new KeybindingPrompt(targetGroup, "Up");
+                prompt.ShowDialog();
+                this.volUpHotkey.Text = targetGroup.getVolumeUpHotkey();
+                saveKbButton_Click(null, null);
+            }
         }
 
         private void setVolumeDown_Click(object sender, EventArgs e)
         {
-            ProgramGroup targetGroup = Program.PGM.getProgramGroup(programGroupList.SelectedIndex);
-            Form prompt = new KeybindingPrompt(targetGroup, "Down");
-            prompt.ShowDialog();
-            this.volDownHotkey.Text = targetGroup.getVolumeDownHotkey();
-            saveKbButton_Click(null, null);
+            if (programGroupList.SelectedIndex != -1)
+            {
+                ProgramGroup targetGroup = Program.PGM.getProgramGroup(programGroupList.SelectedIndex);
+                Form prompt = new KeybindingPrompt(targetGroup, "Down");
+                prompt.ShowDialog();
+                this.volDownHotkey.Text = targetGroup.getVolumeDownHotkey();
+                saveKbButton_Click(null, null); 
+            }
         }
     }
 }
