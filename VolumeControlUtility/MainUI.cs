@@ -183,10 +183,10 @@ namespace VolumeControlUtility
                 programBox.Text = programGroupList.SelectedItem.ToString();
 
                 programsInGroupList.Items.Clear();
-                foreach (ProgramGroup group in Program.PGM.programGroups)
+                /*foreach (ProgramGroup group in Program.PGM.programGroups)
                 {
                     group.updateActiveSessions();
-                }
+                }*/
                 foreach (AudioSession session in Program.PGM.programGroups.ElementAt(programGroupList.SelectedIndex).loadedAudioSessions)
                 {
                     programsInGroupList.Items.Add(session.Process.ProcessName);

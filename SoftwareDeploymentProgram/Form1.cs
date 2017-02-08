@@ -81,7 +81,7 @@ namespace SoftwareDeploymentProgram
                     // Print results
                     foreach (TransferEventArgs transfer in transferResult.Transfers)
                     {
-                        Console.WriteLine("Upload of {0} succeeded", transfer.FileName);
+                        Console.WriteLine("Upload of {0} to deployment server has succeeded", transfer.FileName);
                     }
                 }
 

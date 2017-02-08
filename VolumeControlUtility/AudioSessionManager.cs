@@ -67,10 +67,10 @@ namespace VolumeControlUtility
         }
         public AudioSession getAudioSession(string name)
         {
-            updateActiveAudioSessions();
-            foreach (AudioSession session in getActiveAudioSessions())
+            //updateActiveAudioSessions();
+            foreach (AudioSession session in getActiveAudioSessions().ToList())
             {
-                if (session.Process.ProcessName == name)
+                if (session != null && session.Process.ProcessName == name)
                 {
                     return session;
                 }
