@@ -227,10 +227,7 @@ namespace VolumeControlUtility
             */
         public List<string> getAudioSessions()
         {
-            lock (audioSessions)
-            {
                 return audioSessions;
-            }
         }
 
         /*
@@ -238,8 +235,6 @@ namespace VolumeControlUtility
             */
         public void addAudioSession(AudioSession Session, Boolean rip)
         {
-            lock (loadedAudioSessions)
-            {
                 loadedAudioSessions.Add(Session);
                 if(!rip)
                 {
@@ -247,7 +242,6 @@ namespace VolumeControlUtility
                 }
                 numOfSessions = loadedAudioSessions.Count;
                 updateVolume();
-            }
         }
 
         /*
@@ -273,7 +267,7 @@ namespace VolumeControlUtility
             lock (loadedAudioSessions) {
                 updateActiveSessions();
                 AudioSession targetSession = null;
-                foreach (AudioSession currentAS in loadedAudioSessions)
+                foreach (AudioSession currentAS in loadedAudioSessions.ToList())
                 {
                     if(currentAS.Process.ProcessName == Session){
                         targetSession = currentAS;
@@ -294,7 +288,7 @@ namespace VolumeControlUtility
             lock(loadedAudioSessions) {
                 if (loadedAudioSessions != null)
                 {
-                    foreach (AudioSession currentAS in loadedAudioSessions)
+                    foreach (AudioSession currentAS in loadedAudioSessions.ToList())
                     {
                         //AudioSession ash = Program.ASM.getAudioSession(currentAS.Process.ProcessName);
                         VolumeMixer.SetApplicationVolume(currentAS.ProcessId, (float)volAsPercent);
@@ -345,13 +339,14 @@ namespace VolumeControlUtility
         {
             ProgramGroupData outPGdata = new ProgramGroupData();
             //add audio sessions for programs that were running when THIS program started running
-            foreach(AudioSession aSession in loadedAudioSessions.Distinct()){
+            foreach(AudioSession aSession in loadedAudioSessions.Distinct())
+            {
                 outPGdata.audioSessions.Add(aSession.Process.ProcessName);
                 outPGdata.numOfSessions++;
                 
             }
             //add audio sessions for programs that were not running when THIS program started running
-            foreach (string aSession in nonLoadedAudioSessions)
+            foreach (string aSession in nonLoadedAudioSessions.ToList())
             {
                 
                 outPGdata.audioSessions.Add(aSession);
@@ -377,12 +372,15 @@ namespace VolumeControlUtility
         */
         public void updateActiveSessions()
         {
+            List<string> sessionsTmp;
+
+            sessionsTmp = getAudioSessions().ToList();
             loadedAudioSessions.Clear();
             nonLoadedAudioSessions.Clear();
             this.numOfSessions = 0;
-            for (int i = getAudioSessions().Count; i > 0; i--)
+            for (int i = sessionsTmp.Count; i > 0; i--)
             {
-                string strSession = getAudioSessions().ElementAt(i - 1);
+                string strSession = sessionsTmp.ElementAt(i - 1);
                 AudioSession aSession = Program.ASM.getAudioSession(strSession);
                 if (aSession == null)
                 {

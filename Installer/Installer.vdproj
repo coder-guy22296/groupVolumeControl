@@ -15,7 +15,7 @@
     {
         "Entry"
         {
-        "MsmKey" = "8:_27B2FC499A6F3575789DA6753151C18A"
+        "MsmKey" = "8:_8FCE72E95695833C1A390228AD00BB7D"
         "OwnerKey" = "8:_C281B36DAACB4D17BCADA0641F01C8D8"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -27,26 +27,26 @@
         }
         "Entry"
         {
-        "MsmKey" = "8:_FC23B5A957B312B032EE64AAC108F706"
+        "MsmKey" = "8:_C473018BB892F66276F82E32EA50EFBC"
         "OwnerKey" = "8:_C281B36DAACB4D17BCADA0641F01C8D8"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_FC23B5A957B312B032EE64AAC108F706"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_UNDEFINED"
         "OwnerKey" = "8:_C281B36DAACB4D17BCADA0641F01C8D8"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_27B2FC499A6F3575789DA6753151C18A"
+        "OwnerKey" = "8:_8FCE72E95695833C1A390228AD00BB7D"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_UNDEFINED"
+        "OwnerKey" = "8:_C473018BB892F66276F82E32EA50EFBC"
         "MsmSig" = "8:_UNDEFINED"
         }
     }
@@ -67,6 +67,22 @@
         "PrivateKeyFile" = "8:"
         "TimeStampServer" = "8:"
         "InstallerBootstrapper" = "3:2"
+            "BootstrapperCfg:{63ACBE69-63AA-4F98-B2B6-99F9E24495F2}"
+            {
+            "Enabled" = "11:TRUE"
+            "PromptEnabled" = "11:TRUE"
+            "PrerequisitesLocation" = "2:1"
+            "Url" = "8:"
+            "ComponentsUrl" = "8:"
+                "Items"
+                {
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:.NETFramework,Version=v4.5"
+                    {
+                    "Name" = "8:Microsoft .NET Framework 4.5 (x86 and x64)"
+                    "ProductCode" = "8:.NETFramework,Version=v4.5"
+                    }
+                }
+            }
         }
         "Release"
         {
@@ -83,6 +99,22 @@
         "PrivateKeyFile" = "8:"
         "TimeStampServer" = "8:"
         "InstallerBootstrapper" = "3:2"
+            "BootstrapperCfg:{63ACBE69-63AA-4F98-B2B6-99F9E24495F2}"
+            {
+            "Enabled" = "11:TRUE"
+            "PromptEnabled" = "11:TRUE"
+            "PrerequisitesLocation" = "2:1"
+            "Url" = "8:"
+            "ComponentsUrl" = "8:"
+                "Items"
+                {
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:.NETFramework,Version=v4.5"
+                    {
+                    "Name" = "8:Microsoft .NET Framework 4.5 (x86 and x64)"
+                    "ProductCode" = "8:.NETFramework,Version=v4.5"
+                    }
+                }
+            }
         }
     }
     "Deployable"
@@ -112,14 +144,14 @@
         }
         "File"
         {
-            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_27B2FC499A6F3575789DA6753151C18A"
+            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_8FCE72E95695833C1A390228AD00BB7D"
             {
             "AssemblyRegister" = "3:1"
             "AssemblyIsInGAC" = "11:FALSE"
             "AssemblyAsmDisplayName" = "8:Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
-                    "_27B2FC499A6F3575789DA6753151C18A"
+                    "_8FCE72E95695833C1A390228AD00BB7D"
                     {
                     "Name" = "8:Newtonsoft.Json.dll"
                     "Attributes" = "3:512"
@@ -143,14 +175,14 @@
             "IsDependency" = "11:TRUE"
             "IsolateTo" = "8:"
             }
-            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_FC23B5A957B312B032EE64AAC108F706"
+            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_C473018BB892F66276F82E32EA50EFBC"
             {
             "AssemblyRegister" = "3:1"
             "AssemblyIsInGAC" = "11:FALSE"
             "AssemblyAsmDisplayName" = "8:GlobalHotkeys, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
-                    "_FC23B5A957B312B032EE64AAC108F706"
+                    "_C473018BB892F66276F82E32EA50EFBC"
                     {
                     "Name" = "8:GlobalHotkeys.dll"
                     "Attributes" = "3:512"
@@ -229,22 +261,22 @@
         "Product"
         {
         "Name" = "8:Microsoft Visual Studio"
-        "ProductName" = "8:Installer"
+        "ProductName" = "8:Volume Control Utility"
         "ProductCode" = "8:{FD1F864F-02BA-4EBF-B693-102E0995C839}"
-        "PackageCode" = "8:{B7AE694E-7C08-4B11-BBBE-CC8472C0BEF2}"
+        "PackageCode" = "8:{935AE9E5-334F-4C00-9B8D-E8A184223EF2}"
         "UpgradeCode" = "8:{29A1E656-913C-4CB7-8053-397D45C72DC6}"
         "AspNetVersion" = "8:4.0.30319.0"
         "RestartWWWService" = "11:FALSE"
-        "RemovePreviousVersions" = "11:FALSE"
+        "RemovePreviousVersions" = "11:TRUE"
         "DetectNewerInstalledVersion" = "11:TRUE"
         "InstallAllUsers" = "11:FALSE"
         "ProductVersion" = "8:1.0.0"
-        "Manufacturer" = "8:Default Company Name"
+        "Manufacturer" = "8:CoderguyDev"
         "ARPHELPTELEPHONE" = "8:"
         "ARPHELPLINK" = "8:"
-        "Title" = "8:Installer"
+        "Title" = "8:Volume Control Utility"
         "Subject" = "8:"
-        "ARPCONTACT" = "8:Default Company Name"
+        "ARPCONTACT" = "8:CoderguyDev"
         "Keywords" = "8:"
         "ARPCOMMENTS" = "8:"
         "ARPURLINFOABOUT" = "8:"
@@ -351,6 +383,34 @@
         }
         "Shortcut"
         {
+            "{970C0BB2-C7D0-45D7-ABFA-7EC378858BC0}:_009C4D28CEBE4D358732713CB3AC33CC"
+            {
+            "Name" = "8:VolumeControlUtility"
+            "Arguments" = "8:"
+            "Description" = "8:"
+            "ShowCmd" = "3:1"
+            "IconIndex" = "3:0"
+            "Transitive" = "11:FALSE"
+            "Target" = "8:_C281B36DAACB4D17BCADA0641F01C8D8"
+            "Folder" = "8:_300B35D6155944D69F11B8B6F91C466E"
+            "WorkingFolder" = "8:_58F8811F34EF44E383F170A650D22C0F"
+            "Icon" = "8:"
+            "Feature" = "8:"
+            }
+            "{970C0BB2-C7D0-45D7-ABFA-7EC378858BC0}:_332FC99121D74DC582C94E9F8192FB5B"
+            {
+            "Name" = "8:VolumeControlUtility"
+            "Arguments" = "8:"
+            "Description" = "8:"
+            "ShowCmd" = "3:1"
+            "IconIndex" = "3:0"
+            "Transitive" = "11:FALSE"
+            "Target" = "8:_C281B36DAACB4D17BCADA0641F01C8D8"
+            "Folder" = "8:_17E6CEFF77844EAD98EA7CE19782FD4D"
+            "WorkingFolder" = "8:_58F8811F34EF44E383F170A650D22C0F"
+            "Icon" = "8:"
+            "Feature" = "8:"
+            }
         }
         "UserInterface"
         {

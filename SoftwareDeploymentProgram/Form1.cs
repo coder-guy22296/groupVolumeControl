@@ -14,9 +14,12 @@ namespace SoftwareDeploymentProgram
 {
     public partial class Form1 : Form
     {
-        FileSystemWatcher uploadFolderWatcher = new FileSystemWatcher(@"C:\Users\canpy_000\OneDrive\Documents\GitHub\groupVolumeControl(SPIRE)\Installer\Release");
+        FileSystemWatcher uploadFolderWatcher = new FileSystemWatcher(@"C:\Users\canpy\OneDrive\Documents\GitHub\groupVolumeControl(ATLANTIS)\Installer\Release");
+
+        public string host = "";
         public string usr = "";
         public string pw = "";
+        public string sshKey = "";
 
         public Form1()
         {
@@ -28,8 +31,10 @@ namespace SoftwareDeploymentProgram
                 using (StreamReader sr = new StreamReader("svrcred.txt"))
                 {
                     // Read the stream to a string, and write the string to the console.
+                    host = sr.ReadLine();
                     usr = sr.ReadLine();
                     pw = sr.ReadLine();
+                    sshKey = sr.ReadLine();
 
 
                 }
@@ -39,7 +44,6 @@ namespace SoftwareDeploymentProgram
                 Console.WriteLine("The file could not be read:");
                 Console.WriteLine(e.Message);
             }
-
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -48,23 +52,23 @@ namespace SoftwareDeploymentProgram
             {
 //                FolderBrowserDialog ofd = new FolderBrowserDialog();
 //                ofd.ShowDialog();
-                string folderToUpload = @"C:\Users\canpy_000\OneDrive\Documents\GitHub\groupVolumeControl(SPIRE)\Installer\Release\*";
+                string folderToUpload = @"C:\Users\canpy\OneDrive\Documents\GitHub\groupVolumeControl(ATLANTIS)\Installer\Release\*";
 
                 // Setup session options
                 SessionOptions sessionOptions = new SessionOptions
                 {
                     Protocol = Protocol.Sftp,
-                    HostName = "coderguydev.com",
+                    HostName = host,
                     UserName = usr,
                     Password = pw,
-                    SshHostKeyFingerprint = "ssh-rsa 2048 0d:3c:74:bb:7f:8b:6b:3c:a0:cb:aa:e3:75:a7:30:52"
+                    SshHostKeyFingerprint = sshKey
                 };
 
                 using (Session session = new Session())
                 {
                     // Connect
                     session.Open(sessionOptions);
-                    RemoteDirectoryInfo targetServerDir = session.ListDirectory("/opt/mean/public/VolumeControlUtility/CurrentVersion/");
+                    RemoteDirectoryInfo targetServerDir = session.ListDirectory("/opt/mean/public/VolumeControlUtility/test/");
                     Console.WriteLine(targetServerDir.ToString());
                     // Upload files
                     TransferOptions transferOptions = new TransferOptions();
@@ -72,7 +76,8 @@ namespace SoftwareDeploymentProgram
 
                     TransferOperationResult transferResult;
                     //transferResult = session.PutFiles(@"d:\toupload\*", "/home/user/", false, transferOptions);
-                    transferResult = session.PutFiles(folderToUpload, "/opt/mean/public/VolumeControlUtility/CurrentVersion/",
+                    session.RemoveFiles("/opt/mean/public/VolumeControlUtility/test/*");
+                    transferResult = session.PutFiles(folderToUpload, "/opt/mean/public/VolumeControlUtility/test/",
                         false, transferOptions);
 
                     // Throw on any error
