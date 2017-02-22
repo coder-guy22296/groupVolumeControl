@@ -10,5 +10,4 @@ Over the summer I took this problem and developed my own solution using C#, Grou
 I am working on a system to automate the release of new builds as I compile them,  but for now use the instructions below. If I remember correctly, there are some bugs in that build.
 
 **Installation Instructions**
-- 1. Go to the "[ReleaseExecutables(no-merge-allowed)](https://github.com/coder-guy22296/groupVolumeControl/tree/ReleaseExecutables(no-merge-allowed))" and download the zip file.
-- 2. Complete instructions can be found on the readme for that branch/
+- 1. [Download Now](http://www.coderguydev.com:3000/VolumeControlUtility/CurrentVersion/VCU_Installer.msi)
