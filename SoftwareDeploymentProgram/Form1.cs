@@ -76,8 +76,8 @@ namespace SoftwareDeploymentProgram
 
                     TransferOperationResult transferResult;
                     //transferResult = session.PutFiles(@"d:\toupload\*", "/home/user/", false, transferOptions);
-                    session.RemoveFiles("/opt/mean/public/VolumeControlUtility/test/*");
-                    transferResult = session.PutFiles(folderToUpload, "/opt/mean/public/VolumeControlUtility/test/",
+                    session.RemoveFiles("/opt/mean/public/VolumeControlUtility/untested/*");
+                    transferResult = session.PutFiles(folderToUpload, "/opt/mean/public/VolumeControlUtility/untested/",
                         false, transferOptions);
 
                     // Throw on any error

@@ -14,7 +14,8 @@ namespace VolumeControlUtility
     {
         private List<GlobalHotkey> hotkeys = new List<GlobalHotkey>();
         private ManagementEventWatcher MEW = new ManagementEventWatcher("SELECT TargetInstance FROM __InstanceCreationEvent WITHIN 1 WHERE TargetInstance ISA 'Win32_Process'");
-
+        private int percent = 0;
+     
         public MainUI()
         {
             InitializeComponent();
@@ -81,7 +82,7 @@ namespace VolumeControlUtility
         {
             if (m.Msg == Win32.WM_HOTKEY_MSG_ID)
             {
-                Console.WriteLine(m.ToString());
+                //Console.WriteLine(m.ToString());
             }
             var hotkeyInfo = HotkeyInfo.GetFromMessage(m);
             if (hotkeyInfo != null) HotkeyProc(hotkeyInfo);
@@ -90,8 +91,8 @@ namespace VolumeControlUtility
 
         private void HotkeyProc(HotkeyInfo hotkeyInfo)
         {
-            Console.WriteLine("{0} : Hotkey Proc! {1}, {2}{3}", DateTime.Now.ToString("hh:MM:ss.fff"),
-                                             hotkeyInfo.Key, hotkeyInfo.Modifiers, Environment.NewLine);
+            //Console.WriteLine("{0} : Hotkey Proc! {1}, {2}{3}", DateTime.Now.ToString("hh:MM:ss.fff"),
+             //                                hotkeyInfo.Key, hotkeyInfo.Modifiers, Environment.NewLine);
             if(hotkeyInfo.Key == Keys.F5)
             {
                 rebuildGroups();
@@ -396,6 +397,16 @@ namespace VolumeControlUtility
                 this.volDownHotkey.Text = targetGroup.getVolumeDownHotkey();
                 saveKbButton_Click(null, null); 
             }
+        }
+
+        private void textBox1_TextChanged(object sender, EventArgs e)
+        {
+            percent = Convert.ToInt32(stripPercent.Text);
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            ProgramGroup.rgbStrip.barGraphVisual((Byte)percent);
         }
     }
 }

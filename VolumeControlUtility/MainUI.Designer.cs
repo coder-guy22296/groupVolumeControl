@@ -42,6 +42,8 @@
             this.saveButton = new System.Windows.Forms.Button();
             this.renameGroupButton = new System.Windows.Forms.Button();
             this.infoBox = new System.Windows.Forms.GroupBox();
+            this.curVolume = new System.Windows.Forms.Label();
+            this.label4 = new System.Windows.Forms.Label();
             this.volDownHotkey = new System.Windows.Forms.Label();
             this.volUpHotkey = new System.Windows.Forms.Label();
             this.setVolumeDown = new System.Windows.Forms.Button();
@@ -54,8 +56,8 @@
             this.label1 = new System.Windows.Forms.Label();
             this.saveKbButton = new System.Windows.Forms.Button();
             this.DefaultVolBtn = new System.Windows.Forms.Button();
-            this.label4 = new System.Windows.Forms.Label();
-            this.curVolume = new System.Windows.Forms.Label();
+            this.setStrip = new System.Windows.Forms.Button();
+            this.stripPercent = new System.Windows.Forms.TextBox();
             this.groupBox1.SuspendLayout();
             this.programBox.SuspendLayout();
             this.groupBox3.SuspendLayout();
@@ -232,6 +234,24 @@
             this.infoBox.Text = "Details";
             this.infoBox.Enter += new System.EventHandler(this.infoBox_Enter);
             // 
+            // curVolume
+            // 
+            this.curVolume.AutoSize = true;
+            this.curVolume.Location = new System.Drawing.Point(112, 189);
+            this.curVolume.Name = "curVolume";
+            this.curVolume.Size = new System.Drawing.Size(56, 13);
+            this.curVolume.TabIndex = 39;
+            this.curVolume.Text = "Unknown ";
+            // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point(21, 189);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(85, 13);
+            this.label4.TabIndex = 38;
+            this.label4.Text = "Current Volume: ";
+            // 
             // volDownHotkey
             // 
             this.volDownHotkey.AutoSize = true;
@@ -370,23 +390,27 @@
             this.DefaultVolBtn.UseVisualStyleBackColor = false;
             this.DefaultVolBtn.Click += new System.EventHandler(this.DefaultVolBtn_Click);
             // 
-            // label4
+            // setStrip
             // 
-            this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(21, 189);
-            this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(85, 13);
-            this.label4.TabIndex = 38;
-            this.label4.Text = "Current Volume: ";
+            this.setStrip.BackColor = System.Drawing.Color.Orange;
+            this.setStrip.FlatAppearance.BorderColor = System.Drawing.Color.Gray;
+            this.setStrip.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(192)))), ((int)(((byte)(128)))));
+            this.setStrip.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.setStrip.Location = new System.Drawing.Point(336, 344);
+            this.setStrip.Name = "setStrip";
+            this.setStrip.Size = new System.Drawing.Size(106, 23);
+            this.setStrip.TabIndex = 40;
+            this.setStrip.Text = "set strip";
+            this.setStrip.UseVisualStyleBackColor = false;
+            this.setStrip.Click += new System.EventHandler(this.button1_Click);
             // 
-            // curVolume
+            // stripPercent
             // 
-            this.curVolume.AutoSize = true;
-            this.curVolume.Location = new System.Drawing.Point(112, 189);
-            this.curVolume.Name = "curVolume";
-            this.curVolume.Size = new System.Drawing.Size(56, 13);
-            this.curVolume.TabIndex = 39;
-            this.curVolume.Text = "Unknown ";
+            this.stripPercent.Location = new System.Drawing.Point(336, 318);
+            this.stripPercent.Name = "stripPercent";
+            this.stripPercent.Size = new System.Drawing.Size(89, 20);
+            this.stripPercent.TabIndex = 41;
+            this.stripPercent.TextChanged += new System.EventHandler(this.textBox1_TextChanged);
             // 
             // MainUI
             // 
@@ -394,6 +418,8 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.White;
             this.ClientSize = new System.Drawing.Size(722, 432);
+            this.Controls.Add(this.stripPercent);
+            this.Controls.Add(this.setStrip);
             this.Controls.Add(this.DefaultVolBtn);
             this.Controls.Add(this.infoBox);
             this.Controls.Add(this.renameGroupButton);
@@ -450,6 +476,8 @@
         private System.Windows.Forms.Label volUpHotkey;
         private System.Windows.Forms.Label curVolume;
         private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.Button setStrip;
+        private System.Windows.Forms.TextBox stripPercent;
     }
 }
 

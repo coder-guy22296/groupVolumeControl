@@ -8,6 +8,7 @@ namespace VolumeControlUtility
 {
     class ProgramGroup
     {
+        public static RgbStrip rgbStrip = new RgbStrip();
         public string groupName = "[Default]";
         public int volAsPercent = 0;
         public int numOfSessions = 0;
@@ -179,7 +180,7 @@ namespace VolumeControlUtility
             */
         public void setVolume(int inputVolume)
         {
-            updateActiveSessions();
+            //updateActiveSessions();
             if (inputVolume <= 0)
             {
                 volAsPercent = 0;
@@ -193,14 +194,17 @@ namespace VolumeControlUtility
                 volAsPercent = inputVolume;
             }
             updateVolume();
+            if (rgbStrip != null)
+            {
+                rgbStrip.barGraphVisual((Byte)volAsPercent);
+            }
         }
-
         /*
             Get the current volume of the program group
             */
         public int getVolume()
         {
-            updateActiveSessions();
+            //updateActiveSessions();
             return volAsPercent;
         }
 
