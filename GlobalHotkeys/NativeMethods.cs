@@ -14,5 +14,8 @@ namespace GlobalHotkeys
 
         [DllImport("user32.dll")]
         internal static extern bool UnregisterHotKey(IntPtr hWnd, int id);
+
+        [DllImport("kernel32.dll")]
+        public static extern int GetLastError();
     }
 }

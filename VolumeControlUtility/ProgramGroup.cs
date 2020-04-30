@@ -52,6 +52,8 @@ namespace VolumeControlUtility
                 hasHotkey = true;
             else
                 hasHotkey = false;
+            //this.unregisterHotkeys();
+            this.registerHotkey(null);
         }
 
         /*

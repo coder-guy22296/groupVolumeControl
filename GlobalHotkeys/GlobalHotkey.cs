@@ -13,7 +13,7 @@ namespace GlobalHotkeys
 
         static int nextId = 0;
 
-        private IntPtr hWnd;
+        private IntPtr hWnd = IntPtr.Zero;
         private bool registered;
 
         /// <summary>
@@ -25,7 +25,7 @@ namespace GlobalHotkeys
         /// <param name="registerImmediately"> </param>
         public GlobalHotkey(Modifiers modifier, Keys key, IWin32Window window, bool registerImmediately = false)
         {
-            if (window == null && registerImmediately) throw new ArgumentNullException("window", "You must provide a form or window to register the hotkey against.");
+            // if (window == null && registerImmediately) throw new ArgumentNullException("window", "You must provide a form or window to register the hotkey against.");
             Modifier = modifier;
             Key = (int)key;
             if (window != null)
@@ -46,7 +46,11 @@ namespace GlobalHotkeys
         public void Register()
         {
             if (!NativeMethods.RegisterHotKey(hWnd, Id, (int)Modifier, Key))
-                throw new GlobalHotkeyException("Hotkey failed to register.");
+            {
+                string errorMessage = new System.ComponentModel.Win32Exception(NativeMethods.GetLastError()).Message;
+                //uint errcode = NativeMethods.GetLastError();
+                throw new GlobalHotkeyException("Hotkey failed to register: " + errorMessage);
+            }
             registered = true;
         }
 
@@ -57,7 +61,11 @@ namespace GlobalHotkeys
         {
             if (!registered) return;
             if (!NativeMethods.UnregisterHotKey(hWnd, Id))
-                throw new GlobalHotkeyException("Hotkey failed to unregister.");
+            {
+                string errorMessage = new System.ComponentModel.Win32Exception(NativeMethods.GetLastError()).Message;
+                //uint errcode = NativeMethods.GetLastError();
+                throw new GlobalHotkeyException("Hotkey failed to unregister: " + errorMessage);
+            }
             registered = false;
         }
 
@@ -80,7 +88,7 @@ namespace GlobalHotkeys
 
         public override sealed int GetHashCode()
         {
-            return (int)Modifier ^ Key ^ hWnd.ToInt32();
+            return (int)Modifier ^ Key;
         }
 
         #endregion

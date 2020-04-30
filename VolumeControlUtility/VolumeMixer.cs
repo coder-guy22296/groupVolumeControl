@@ -1,4 +1,5 @@
 ﻿/* I am not the author of this code, however I may have slightly modified it*/
+// original source, I think: https://stackoverflow.com/questions/14306048/controling-volume-mixer
 using System;
 using System.Collections.Generic;
 using System.Linq;
