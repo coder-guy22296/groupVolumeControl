@@ -53,20 +53,36 @@ namespace VolumeControlUtility
             return "";
         }
 
-        static string handleGroups(HttpListenerRequest request, string resourceId)
+        static string handleGroups(HttpListenerRequest request, string resourceId, int parentThreadId)
         {
+            JObject json = new JObject();
+            if (request.HttpMethod == "PUT" || request.HttpMethod == "POST")
+            {
+                StreamReader contentStream = new StreamReader(request.InputStream);
+                string jsonString = contentStream.ReadToEnd();
+                json = JsonConvert.DeserializeObject<JObject>(jsonString);
+            }
 
             switch (request.HttpMethod)
             {
                 case "GET":
                     return getGroups();
+                case "PUT":
+                    Int32 index = Int32.Parse(resourceId);
+                    ProgramGroup pg = PGM.getProgramGroup(index);
+
+                    pg.rename(json["newName"].ToString());
+                    return "name updated";
                 case "POST":
-                    StreamReader contentStream = new StreamReader(request.InputStream);
-                    string jsonString = contentStream.ReadToEnd();
-                    JObject json = JsonConvert.DeserializeObject<JObject>(jsonString);
                     return createGroup(json["groupName"].ToString());
                 case "DELETE":
-                    return deleteGroup(Int32.Parse(resourceId));
+                    // send to main thread
+                    Console.WriteLine("deleting group, sending to thread " + parentThreadId + "(main thread)");
+                    Int32 payload = Int32.Parse(resourceId);
+                    GCHandle payload_handle = GCHandle.Alloc(payload);
+                    IntPtr parameter = (IntPtr)payload_handle;
+                    PostThreadMessage(parentThreadId, 69, parameter, IntPtr.Zero);
+                    return "";
             }
             return "not handled";
         }
@@ -153,11 +169,8 @@ namespace VolumeControlUtility
                     HotkeyPayload payload = new HotkeyPayload(resourceId, json["volumeUp"].ToObject<string>(), json["volumeDown"].ToObject<string>(), json["mods"].ToObject<List<string>>());
                     GCHandle payload_handle = GCHandle.Alloc(payload);
                     IntPtr parameter = (IntPtr)payload_handle;
-                    PostThreadMessage(parentThreadId, 42, parameter, IntPtr.Zero);
 
-                    //pg.setVolumeUpHotkey(json["volumeUp"].ToObject<string>());
-                    //pg.setVolumeDownHotkey(json["volumeDown"].ToObject<string>());
-                    //pg.setVolumeHotkeyModifiers(json["mods"].ToObject<List<string>>());
+                    PostThreadMessage(parentThreadId, 42, parameter, IntPtr.Zero);
                     return "shortcut set";
             }
             return "not handled";
@@ -165,8 +178,6 @@ namespace VolumeControlUtility
 
         static string handleSystem(HttpListenerRequest request, string resourceId)
         {
-            ProgramGroup pg = PGM.getProgramGroup(resourceId);
-
             StreamReader contentStream = new StreamReader(request.InputStream);
             string jsonString = contentStream.ReadToEnd();
             JObject json = JsonConvert.DeserializeObject<JObject>(jsonString);
@@ -181,6 +192,22 @@ namespace VolumeControlUtility
                         programs.Add(session.Process.ProcessName);
                     }
                     return JsonConvert.SerializeObject(programs);
+                case "POST":
+                    if (json["action"].ToObject<string>() == "save")
+                    {
+                        SecureJsonSerializer<ProgramGroupManagerData> pgmDataFile = new SecureJsonSerializer<ProgramGroupManagerData>("pgmSave.json");
+                        pgmDataFile.Save(PGM.generateProgramGroupManagerData());
+                        return "saved";
+                    }
+                    else if (json["action"].ToObject<string>() == "default_volume")
+                    {
+                        foreach (ProgramGroup group in PGM.programGroups)
+                        {
+                            group.setVolume(100);
+                        }
+                        return "group volumes reset";
+                    }
+                    break;
             }
             return "not handled";
         }
@@ -279,7 +306,7 @@ namespace VolumeControlUtility
                     }
                     else
                     {
-                        responseString = handleGroups(request, resourceId);
+                        responseString = handleGroups(request, resourceId, parentThreadId);
                     }
                 }
                 else if (resource == "system")
@@ -321,17 +348,24 @@ namespace VolumeControlUtility
                 }
                 else if (message.Msg == 42)
                 {
+                    Console.WriteLine("set hotkeys - Roger Roger Bravo Leader");
                     IntPtr parameter = message.WParam;
                     GCHandle handle2 = (GCHandle)parameter;
                     HotkeyPayload payload = (handle2.Target as HotkeyPayload?) ?? new HotkeyPayload("");
 
                     ProgramGroup pg = PGM.getProgramGroup(payload.resourceId);
                     pg.setVolumeHotkeys(payload.mods, payload.volumeUp, payload.volumeDown, null);
-                    //pg.setVolumeUpHotkey(payload.volumeUp);
-                    //pg.setVolumeDownHotkey(payload.volumeDown);
-                    //pg.setVolumeHotkeyModifiers(payload.mods);
-                    Console.WriteLine("Roger Roger Bravo Leader");
-                } else if (message.Msg == WM_TIMER)
+                }
+                else if (message.Msg == 69) // remove program group
+                {
+                    Console.WriteLine("remove group - Roger Roger Bravo Leader");
+                    IntPtr parameter = message.WParam;
+                    GCHandle handle2 = (GCHandle) parameter;
+                    Int32 index = (Int32) handle2.Target;
+
+                    PGM.removeProgramGroup(index);
+                }
+                else if (message.Msg == WM_TIMER)
                 {
                     System.Environment.Exit(0);
                 }

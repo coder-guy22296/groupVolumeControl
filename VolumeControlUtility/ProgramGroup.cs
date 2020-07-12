@@ -56,6 +56,11 @@ namespace VolumeControlUtility
             this.registerHotkey(null);
         }
 
+        ~ProgramGroup()
+        {
+            Console.WriteLine("Group " + this.groupName + " Destroyed");
+        }
+
         /*
             This function is called with info on what hotkey was pressed,
             if the hotkey that was pressed belongs to this group then it

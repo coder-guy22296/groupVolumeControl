@@ -46,6 +46,7 @@ namespace VolumeControlUtility
             */
         public void removeProgramGroup(int IndexOfItemToBeRemoved)
         {
+            programGroups.ElementAt(IndexOfItemToBeRemoved).unregisterHotkeys();
             programGroups.RemoveAt(IndexOfItemToBeRemoved);
             updateNumOfGroups();
 
