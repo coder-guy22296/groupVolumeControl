@@ -1,0 +1,34 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net5.0-windows</TargetFramework>
+    <OutputType>WinExe</OutputType>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+  </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject>VolumeControlUtilityService.Program</StartupObject>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Update="VolumeControlUtilityService.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\VolumeControlUtility\VolumeControlUtility.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Analyzer Include="..\packages\Microsoft.Windows.CsWin32.0.1.506-beta\analyzers\cs\MessagePack.Annotations.dll" />
+    <Analyzer Include="..\packages\Microsoft.Windows.CsWin32.0.1.506-beta\analyzers\cs\MessagePack.dll" />
+    <Analyzer Include="..\packages\Microsoft.Windows.CsWin32.0.1.506-beta\analyzers\cs\Microsoft.Bcl.AsyncInterfaces.dll" />
+    <Analyzer Include="..\packages\Microsoft.Windows.CsWin32.0.1.506-beta\analyzers\cs\Microsoft.Windows.CsWin32.dll" />
+    <Analyzer Include="..\packages\Microsoft.Windows.CsWin32.0.1.506-beta\analyzers\cs\Microsoft.Windows.SDK.Win32Docs.dll" />
+    <Analyzer Include="..\packages\Microsoft.Windows.CsWin32.0.1.506-beta\analyzers\cs\System.Buffers.dll" />
+    <Analyzer Include="..\packages\Microsoft.Windows.CsWin32.0.1.506-beta\analyzers\cs\System.Memory.dll" />
+    <Analyzer Include="..\packages\Microsoft.Windows.CsWin32.0.1.506-beta\analyzers\cs\System.Numerics.Vectors.dll" />
+    <Analyzer Include="..\packages\Microsoft.Windows.CsWin32.0.1.506-beta\analyzers\cs\System.Runtime.CompilerServices.Unsafe.dll" />
+    <Analyzer Include="..\packages\Microsoft.Windows.CsWin32.0.1.506-beta\analyzers\cs\System.Text.Encodings.Web.dll" />
+    <Analyzer Include="..\packages\Microsoft.Windows.CsWin32.0.1.506-beta\analyzers\cs\System.Text.Json.dll" />
+    <Analyzer Include="..\packages\Microsoft.Windows.CsWin32.0.1.506-beta\analyzers\cs\System.Threading.Tasks.Extensions.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="5.0.1" />
+    <PackageReference Include="Microsoft.Windows.CsWin32" Version="0.1.506-beta" />
+  </ItemGroup>
+</Project>

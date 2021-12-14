@@ -5,6 +5,7 @@ using System.Windows.Forms;
 using System.Globalization;
 using System.IO;
 using System.Net;
+using System.Net.WebSockets;
 using System.Collections.Generic;
 using System.Diagnostics;
 using Newtonsoft.Json;
@@ -13,9 +14,27 @@ using GlobalHotkeys;
 using System.Threading.Tasks;
 using System.Runtime.InteropServices;
 
+using Microsoft.Extensions.Logging;
+using Microsoft.Windows.Sdk;
+
+
+namespace VCU_TEMP
+{
+    [Guid("D666063F-1587-4E43-81F1-B948E807363F"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+    partial interface IMMDevice
+    {
+        void Activate(Guid iid, uint dwClsCtx, in PROPVARIANT pActivationParams, out object ppInterface);
+        void OpenPropertyStore(uint stgmAccess, out IPropertyStore ppProperties);
+        unsafe void GetId(PWSTR* ppstrId);
+        unsafe void GetState(uint* pdwState);
+    }
+}
+
+
 namespace VolumeControlUtility
 {
-    static class Program
+
+    public static class Program
     {
         /// <summary>
         /// The main entry point for the application.
@@ -31,7 +50,11 @@ namespace VolumeControlUtility
 
         public static ProgramGroupManager PGM = new ProgramGroupManager();
         public static AudioSessionManager ASM = new AudioSessionManager();
-        public static SecureJsonSerializer<ProgramGroupManagerData> pgmDataFile = new SecureJsonSerializer<ProgramGroupManagerData>("pgmSave.json");
+        private static SecureJsonSerializer<ProgramGroupManagerData> pgmDataFile = new SecureJsonSerializer<ProgramGroupManagerData>("pgmSave.json");
+
+        internal static SecureJsonSerializer<ProgramGroupManagerData> PgmDataFile { get => pgmDataFile; set => pgmDataFile = value; }
+
+        public static WebSocket ws;
 
         static string getGroups()
         {
@@ -142,6 +165,8 @@ namespace VolumeControlUtility
                     return JsonConvert.SerializeObject(pg.getVolume()); ;
                 case "PUT":
                     pg.setVolume(json["volume"].ToObject<int>());
+                    byte[] buffer = System.Text.Encoding.UTF8.GetBytes(getGroups());
+                    ws.SendAsync(new ArraySegment<byte>(buffer), WebSocketMessageType.Text, true, CancellationToken.None);
                     return "volume set";
             }
             return "not handled";
@@ -187,7 +212,7 @@ namespace VolumeControlUtility
             {
                 case "GET":
                     List<string> programs = new List<string>();
-                    foreach (AudioSession session in ASM.getActiveAudioSessions())
+                    foreach (AudioSessionV2 session in ASM.getActiveAudioSessions())
                     {
                         programs.Add(session.Process.ProcessName);
                     }
@@ -223,108 +248,119 @@ namespace VolumeControlUtility
 
         static void handle_network_requests(int parentThreadId)
         {
-            Console.WriteLine("handling network requests for thread " + parentThreadId);
-            if (HttpListener.IsSupported)
+            try
             {
-                Console.WriteLine("sweet, it works");
-            }
-            else
-            {
-                Console.WriteLine("func, that sucks");
-            }    // URI prefixes are required,
-                 // for example "http://contoso.com:8080/index/".
-            String[] prefixes = { "http://*:4000/api/" };
-            if (prefixes == null || prefixes.Length == 0)
-                throw new ArgumentException("prefixes");
-
-            // Create a listener.
-            HttpListener listener = new HttpListener();
-            // Add the prefixes.
-            foreach (string s in prefixes)
-            {
-                listener.Prefixes.Add(s);
-            }
-            listener.Start();
-            while (true)
-            {
-                Console.WriteLine("Listening...");
-                // Note: The GetContext method blocks while waiting for a request. 
-                //await Task.Yield();
-                HttpListenerContext context = listener.GetContext();
-                HttpListenerRequest request = context.Request;
-
-                // Obtain a response object.
-                HttpListenerResponse response = context.Response;
-                // Construct a response.
-                byte[] buffer;
-                System.IO.Stream output;
-                if (request.HttpMethod == "OPTIONS")
+                Console.WriteLine("handling network requests for thread " + parentThreadId);
+                if (HttpListener.IsSupported)
                 {
-                    response.AddHeader("Access-Control-Allow-Headers", "Content-Type, Accept, X-Requested-With");
-                    response.AddHeader("Access-Control-Allow-Methods", "GET, PUT, POST, DELETE");
-                    response.AddHeader("Access-Control-Max-Age", "1728000");
-                    response.AddHeader("Access-Control-Allow-Origin", "*");
+                    Console.WriteLine("sweet, it works");
+                }
+                else
+                {
+                    Console.WriteLine("func, that sucks");
+                }    // URI prefixes are required,
+                     // for example "http://contoso.com:8080/index/".
+                String[] prefixes = { "http://*:4000/api/" };
+                if (prefixes == null || prefixes.Length == 0)
+                    throw new ArgumentException("prefixes");
 
-                    buffer = System.Text.Encoding.UTF8.GetBytes("");
+                // Create a listener.
+                HttpListener listener = new HttpListener();
+                // Add the prefixes.
+                foreach (string s in prefixes)
+                {
+                    listener.Prefixes.Add(s);
+                }
+                listener.Start();
+                while (true)
+                {
+                    Console.WriteLine("Listening...");
+                    // Note: The GetContext method blocks while waiting for a request. 
+                    //await Task.Yield();
+                    HttpListenerContext context = listener.GetContext();
+                    HttpListenerRequest request = context.Request;
+
+                    // Obtain a response object.
+                    HttpListenerResponse response = context.Response;
+                    // Construct a response.
+                    byte[] buffer;
+                    System.IO.Stream output;
+                    if (request.HttpMethod == "OPTIONS")
+                    {
+                        response.AddHeader("Access-Control-Allow-Headers", "Content-Type, Accept, X-Requested-With");
+                        response.AddHeader("Access-Control-Allow-Methods", "GET, PUT, POST, DELETE");
+                        response.AddHeader("Access-Control-Max-Age", "1728000");
+                        response.AddHeader("Access-Control-Allow-Origin", "*");
+
+                        buffer = System.Text.Encoding.UTF8.GetBytes("");
+                        // Get a response stream and write the response to it.
+                        response.ContentLength64 = buffer.Length;
+                        response.ContentType = "application/json";
+                        output = response.OutputStream;
+                        output.Write(buffer, 0, buffer.Length);
+                        // You must close the output stream.
+                        output.Close();
+                        continue;
+                    }
+                    string responseString = "not implemented";
+                    string path = request.RawUrl.Split('?')[0];
+
+                    string[] pathArr = path.Split('/');
+                    string apiVersion = pathArr[2];
+
+                    string resource = pathArr.Length > 3 ? pathArr[3] : null;
+                    string resourceId = pathArr.Length > 4 ? pathArr[4] : null;
+
+                    string subResource = pathArr.Length > 5 ? pathArr[5] : null;
+                    string subResourceId = pathArr.Length > 6 ? pathArr[6] : null;
+
+                    //StreamReader contentStream = new StreamReader(request.InputStream);
+                    //string jsonString = contentStream.ReadToEnd();
+                    //JObject jsonContent = JsonConvert.DeserializeObject<JObject>(jsonString);
+                    if (resource == "groups")
+                    {
+                        if (subResource == "programs")
+                        {
+                            responseString = handleGroupPrograms(request, resourceId, subResourceId);
+                        }
+                        else if (subResource == "volume")
+                        {
+                            responseString = handleGroupVolume(request, resourceId);
+                        }
+                        else if (subResource == "shortcuts")
+                        {
+                            responseString = handleGroupShortcuts(request, resourceId, parentThreadId);
+                        }
+                        else
+                        {
+                            responseString = handleGroups(request, resourceId, parentThreadId);
+                        }
+                    }
+                    else if (resource == "system")
+                    {
+                        responseString = handleSystem(request, resourceId);
+                    }
+
+                    // send update after every operation
+                    byte[] wsBuffer = System.Text.Encoding.UTF8.GetBytes(getGroups());
+                    ws.SendAsync(new ArraySegment<byte>(wsBuffer), WebSocketMessageType.Text, true, CancellationToken.None);
+
+                    buffer = System.Text.Encoding.UTF8.GetBytes(responseString);
                     // Get a response stream and write the response to it.
                     response.ContentLength64 = buffer.Length;
                     response.ContentType = "application/json";
+                    response.AddHeader("Access-Control-Allow-Origin", "*");
                     output = response.OutputStream;
                     output.Write(buffer, 0, buffer.Length);
                     // You must close the output stream.
                     output.Close();
-                    continue;
                 }
-                string responseString = "not implemented";
-                string path = request.RawUrl.Split('?')[0];
-
-                string[] pathArr = path.Split('/');
-                string apiVersion = pathArr[2];
-
-                string resource = pathArr.Length > 3 ? pathArr[3] : null;
-                string resourceId = pathArr.Length > 4 ? pathArr[4] : null;
-
-                string subResource = pathArr.Length > 5 ? pathArr[5] : null;
-                string subResourceId = pathArr.Length > 6 ? pathArr[6] : null;
-
-                //StreamReader contentStream = new StreamReader(request.InputStream);
-                //string jsonString = contentStream.ReadToEnd();
-                //JObject jsonContent = JsonConvert.DeserializeObject<JObject>(jsonString);
-                if (resource == "groups")
-                {
-                    if (subResource == "programs")
-                    {
-                        responseString = handleGroupPrograms(request, resourceId, subResourceId);
-                    }
-                    else if (subResource == "volume")
-                    {
-                        responseString = handleGroupVolume(request, resourceId);
-                    }
-                    else if (subResource == "shortcuts")
-                    {
-                        responseString = handleGroupShortcuts(request, resourceId, parentThreadId);
-                    }
-                    else
-                    {
-                        responseString = handleGroups(request, resourceId, parentThreadId);
-                    }
-                }
-                else if (resource == "system")
-                {
-                    responseString = handleSystem(request, resourceId);
-                }
-
-                buffer = System.Text.Encoding.UTF8.GetBytes(responseString);
-                // Get a response stream and write the response to it.
-                response.ContentLength64 = buffer.Length;
-                response.ContentType = "application/json";
-                response.AddHeader("Access-Control-Allow-Origin", "*");
-                output = response.OutputStream;
-                output.Write(buffer, 0, buffer.Length);
-                // You must close the output stream.
-                output.Close();
+                listener.Stop();
             }
-            listener.Stop();
+            catch (Exception exception)
+            {
+                Console.WriteLine("http task error: " + exception.ToString());
+            }
         }
 
         delegate void HandleNetworkDelegate(int parentThreadId);
@@ -345,6 +381,8 @@ namespace VolumeControlUtility
 
                     var hotkeyInfo = HotkeyInfo.GetFromMessage(message);
                     if (hotkeyInfo != null) HotkeyProc(hotkeyInfo);
+                    byte[] buffer = System.Text.Encoding.UTF8.GetBytes(getGroups());
+                    ws.SendAsync(new ArraySegment<byte>(buffer), WebSocketMessageType.Text, true, CancellationToken.None);
                 }
                 else if (message.Msg == 42)
                 {
@@ -355,6 +393,8 @@ namespace VolumeControlUtility
 
                     ProgramGroup pg = PGM.getProgramGroup(payload.resourceId);
                     pg.setVolumeHotkeys(payload.mods, payload.volumeUp, payload.volumeDown, null);
+                    byte[] buffer = System.Text.Encoding.UTF8.GetBytes(getGroups());
+                    ws.SendAsync(new ArraySegment<byte>(buffer), WebSocketMessageType.Text, true, CancellationToken.None);
                 }
                 else if (message.Msg == 69) // remove program group
                 {
@@ -364,6 +404,8 @@ namespace VolumeControlUtility
                     Int32 index = (Int32) handle2.Target;
 
                     PGM.removeProgramGroup(index);
+                    byte[] buffer = System.Text.Encoding.UTF8.GetBytes(getGroups());
+                    ws.SendAsync(new ArraySegment<byte>(buffer), WebSocketMessageType.Text, true, CancellationToken.None);
                 }
                 else if (message.Msg == WM_TIMER)
                 {
@@ -372,15 +414,193 @@ namespace VolumeControlUtility
             }
         }
 
-        delegate void HandleMessageDelegate();
+
+        static void handle_websocket()
+        {
+            try
+            {
+                // wait for websocket connection
+                HttpListener listener = new HttpListener();
+                listener.Prefixes.Add("http://*:4000/ws/");
+                listener.Start();
+
+
+                while (true)
+                {
+                    HttpListenerContext context = listener.GetContext();
+                    HttpListenerWebSocketContext wsContext = context.AcceptWebSocketAsync(null).GetAwaiter().GetResult();
+                    ws = wsContext.WebSocket;
+                }
+            }
+            catch (Exception exception)
+            {
+                Console.WriteLine("websocket task error: " + exception.Message);
+            }
+        }
+
+        delegate void ManageWebSocketDelegate();
+
+
+        unsafe public static void DebugMain()
+        {
+            //Debugger.Launch();
+            //Debugger.Break();
+            CLSCTX CLSCTX_ALL = CLSCTX.CLSCTX_INPROC_SERVER
+                | CLSCTX.CLSCTX_INPROC_HANDLER
+                | CLSCTX.CLSCTX_LOCAL_SERVER
+                | CLSCTX.CLSCTX_REMOTE_SERVER;
+
+            void* deviceEnumeratorObj;
+            PInvoke.CoCreateInstance(
+                typeof(MMDeviceEnumerator).GUID,
+                null,
+                (uint)CLSCTX_ALL,
+                typeof(IMMDeviceEnumerator).GUID,
+                out deviceEnumeratorObj
+            ).ThrowOnFailure();
+            IMMDeviceEnumerator* deviceEnumerator = (IMMDeviceEnumerator*)deviceEnumeratorObj;
+
+            IMMDevice* speakers;
+            deviceEnumerator->GetDefaultAudioEndpoint(
+                EDataFlow.eRender,
+                ERole.eMultimedia,
+                out speakers
+            ).ThrowOnFailure();
+
+            void* audioSessionManager2ptr;
+            speakers->Activate(
+                typeof(IAudioSessionManager2).GUID,
+                (uint)CLSCTX_ALL,
+                null,
+                out audioSessionManager2ptr
+            );
+            IAudioSessionManager2* audioSessionManager2 = (IAudioSessionManager2*)audioSessionManager2ptr;
+
+            Guid IID_IAudioSessionManager = typeof(IAudioSessionManager).GUID;
+
+            IAudioSessionEnumerator* sessionEnumerator;
+            int count;
+            audioSessionManager2->GetSessionEnumerator(out sessionEnumerator).ThrowOnFailure();
+            sessionEnumerator->GetCount(out count);
+            List<AudioSessionV2> list = new List<AudioSessionV2>();
+            for (int i = 0; i < count; i++)
+            {
+                IAudioSessionControl* ctl = null;
+
+                Guid IID_IAudioSessionControl2 = typeof(IAudioSessionControl2).GUID;
+                int result = sessionEnumerator->GetSession(i, out ctl).ThrowOnFailure();
+                if (ctl == null)
+                    continue;
+
+
+                void* ctl2Ptr = null;
+                ctl->QueryInterface(IID_IAudioSessionControl2, out ctl2Ptr).ThrowOnFailure();
+                IAudioSessionControl2* ctl2 = (IAudioSessionControl2*)ctl2Ptr;
+                if (ctl2 == null)
+                    ctl->Release();
+                    continue;
+
+                PWSTR displayName;
+                AudioSessionState state;
+                uint pid = 0;
+                PWSTR sessionId;
+                PWSTR sessionInstanceId;
+
+                ctl2->GetDisplayName(out displayName).ThrowOnFailure();
+                ctl2->GetState(out state).ThrowOnFailure();
+                ctl2->GetProcessId(out pid).ThrowOnFailure();
+                ctl2->GetSessionIdentifier(out sessionId).ThrowOnFailure();
+                ctl2->GetSessionInstanceIdentifier(out sessionInstanceId).ThrowOnFailure();
+
+                Console.WriteLine("======================================================");
+                Console.WriteLine("Audio Session Display Name: " + displayName);
+                Console.WriteLine("Audio Session Process Name: " + Process.GetProcessById(checked((int)pid)).ProcessName);
+                Console.WriteLine("Audio Session Process Id: " + pid);
+                Console.WriteLine("Audio Session Session Id: " + sessionId);
+                Console.WriteLine("Audio Session Session Instance Id: " + sessionInstanceId);
+                Console.WriteLine("Audio Session State: " + state);
+
+                list.Add(new AudioSessionV2(ctl2));
+                ctl->Release();
+                ctl2->Release();
+            }
+            Console.WriteLine("======================================================");
+            Console.WriteLine("did a thing");
+            deviceEnumerator->Release();
+            speakers->Release();
+            audioSessionManager2->Release();
+            sessionEnumerator->Release();
+        }
+
+        //public static void ServiceMain(ILogger eventLog)
+        //{
+        //    //DebugMain();
+        //    eventLog.LogInformation("Service Main Executed");
+        //    foreach (AudioDevice device in AudioUtilities.GetAllDevices())
+        //    {
+        //        eventLog.LogInformation("AudioDevice: " + device.Id + " - " + device.State);
+        //    }
+
+        //    foreach (AudioSession session in AudioUtilities.GetAllSessions())
+        //    {
+        //        if (session.Process != null)
+        //        {
+        //            eventLog.LogInformation("AudioSessionA: " + session.Process.ProcessName + " - " + session.State);
+        //        }
+        //        else
+        //        {
+        //            eventLog.LogInformation("AudioSessionB: " + session.DisplayName + " - " + session.State);
+        //        }
+        //    }
+
+        //    Console.WriteLine("====================================");
+        //    Console.WriteLine("initializing PGM");
+        //    Console.WriteLine("====================================");
+        //    bool saveFileExists = File.Exists("pgmSave.json");
+        //    eventLog.LogInformation("save file found:" + saveFileExists);
+
+        //    if (saveFileExists)
+        //    {
+        //        eventLog.LogInformation("Initializing PGM - from save file");
+        //        PGM = (new ProgramGroupManagerFactory().getProgramGroupManager(pgmDataFile.Load()));
+        //        PGM.setLogger(eventLog);
+        //        eventLog.LogInformation("Initializing PGM done");
+        //    }
+        //    else
+        //    {
+        //        eventLog.LogInformation("Initializing PGM - new instance");
+        //        PGM = new ProgramGroupManager();
+        //        PGM.setLogger(eventLog);
+        //        eventLog.LogInformation("Initializing PGM done");
+
+        //        eventLog.LogInformation("Creating save file...");
+        //        SecureJsonSerializer<ProgramGroupManagerData> pgmDataFile = new SecureJsonSerializer<ProgramGroupManagerData>("pgmSave.json");
+        //        pgmDataFile.Save(PGM.generateProgramGroupManagerData());
+        //        eventLog.LogInformation("Done!");
+        //    }
+        //    Console.WriteLine("====================================");
+        //    Console.WriteLine("initializing PGM done");
+        //    Console.WriteLine("====================================");
+
+        //    ManageWebSocketDelegate websocket_delegate = new ManageWebSocketDelegate(handle_websocket);
+        //    Task websockets_task = Task.Run(() => websocket_delegate.Invoke());
+
+        //    HandleNetworkDelegate http_requests_delegate = new HandleNetworkDelegate(handle_network_requests);
+        //    Task http_requests_task = Task.Run(() => http_requests_delegate.Invoke(Process.GetCurrentProcess().Threads[0].Id));
+
+        //    //HandleMessageDelegate m = new HandleMessageDelegate(handle_messages);
+        //    //IAsyncResult ar = m.BeginInvoke(null, null);
+
+        //    handle_messages();
+
+        //    websockets_task.Wait();
+        //    http_requests_task.Wait();
+        //}
+
 
         [STAThread]
         static void Main()
         {
-
-            //Application.EnableVisualStyles();
-            //Application.SetCompatibleTextRenderingDefault(false);
-
             Console.WriteLine("====================================");
             Console.WriteLine("initializing PGM");
             Console.WriteLine("====================================");
@@ -393,175 +613,20 @@ namespace VolumeControlUtility
             Console.WriteLine("====================================");
             Console.WriteLine("initializing PGM done");
             Console.WriteLine("====================================");
-            HandleNetworkDelegate m2 = new HandleNetworkDelegate(handle_network_requests);
-            IAsyncResult ar2 = m2.BeginInvoke(Process.GetCurrentProcess().Threads[0].Id, null, null);
+
+            ManageWebSocketDelegate websocket_delegate = new ManageWebSocketDelegate(handle_websocket);
+            Task websockets_task = Task.Run(() => websocket_delegate.Invoke());
+
+            HandleNetworkDelegate http_requests_delegate = new HandleNetworkDelegate(handle_network_requests);
+            Task http_requests_task = Task.Run(() => http_requests_delegate.Invoke(Process.GetCurrentProcess().Threads[0].Id));
             
             //HandleMessageDelegate m = new HandleMessageDelegate(handle_messages);
             //IAsyncResult ar = m.BeginInvoke(null, null);
 
             handle_messages();
 
-            Thread.Sleep(999999999);
-            //ar.AsyncWaitHandle.WaitOne();
-            //m.EndInvoke(ar);
-           //m2.EndInvoke(ar2);
-
-            //Application.Run(new MainUI());
-
-            //Application.Run(new MainUI());
-            /*
-            string proceed = "y";
-            do
-            {
-                ConsoleManager.Show();
-                Console.Clear();
-                Console.WriteLine("0) Create a program group");
-                Console.WriteLine("1) Delete a program group");
-                Console.WriteLine("2) Add a program to a group");
-                Console.WriteLine("3) Show Programs in a group");
-                Console.WriteLine("4) Set Volume of a group");
-                Console.WriteLine("5) Set the volume of a particular Application");
-                Console.WriteLine("6) Quit");
-                Console.Write("Enter your selection: ");
-                int ans;
-                if (!(int.TryParse(Console.ReadLine(), out ans)))
-                {
-                    ans = 99999;
-                }
-
-                switch (ans)
-                {
-                    case 0:
-                        Console.Clear();
-                        Console.Write("Enter a name for the Program Group: ");
-                        string groupName = Console.ReadLine();
-                        PGM.addProgramGroup(groupName);
-                        break;
-                    case 1:
-                        PGM.displayProgramGroups();
-                        if (PGM.getNumOfProgramGroups() == 0)
-                        {
-                            Console.Write("press Enter to continue...");
-                            Console.ReadLine();
-                            break;
-                        }
-
-                        int toRemove;
-                        do
-                        {
-                            Console.WriteLine("Select a Program Group from above to remove: ");
-                        } while (!(int.TryParse(Console.ReadLine(), out toRemove)));
-                        PGM.removeProgramGroup(toRemove);
-                        break;
-                    case 2:
-                        PGM.displayProgramGroups();
-                        if (PGM.getNumOfProgramGroups() == 0)
-                        {
-                            Console.Write("press Enter to continue...");
-                            Console.ReadLine();
-                            break;
-                        }
-                        int groupNum;
-                        do
-                        {
-                            Console.WriteLine("Select a Program Group to add a program to: ");
-                        } while (!(int.TryParse(Console.ReadLine(), out groupNum)));
-                        ProgramGroup toBeUpdated = PGM.getProgramGroup(groupNum);
-                        ASM.updateActiveAudioSessions();
-                        ASM.displayActiveAudioSessions();
-                        int ASIndex;
-                        do
-                        {
-                            Console.Write("enter application number from above list to add to '"
-                                + toBeUpdated.getName() + "' Program Group: ");
-                        } while (!(int.TryParse(Console.ReadLine(), out ASIndex)));
-                        toBeUpdated.addAudioSession(ASM.getAudioSession(ASIndex));
-                        Console.WriteLine(ASM.getAudioSession(ASIndex).Process.ProcessName + " has been added to " + toBeUpdated.getName());
-                        Console.Write("press Enter to continue...");
-                        Console.ReadLine();
-                        break;
-                    case 3:
-                        PGM.displayProgramGroups();
-                        if (PGM.getNumOfProgramGroups() == 0)
-                        {
-                            Console.Write("press Enter to continue...");
-                            Console.ReadLine();
-                            break;
-                        }
-                        do
-                        {
-                            Console.WriteLine("Select a Program Group to show the programs it contains: ");
-                        } while (!(int.TryParse(Console.ReadLine(), out groupNum)));
-                        PGM.getProgramGroup(groupNum).displayAudioSessions();
-                        Console.Write("press Enter to continue...");
-                        Console.ReadLine();
-                        break;
-                    case 4:
-                        PGM.displayProgramGroups();
-                        if (PGM.getNumOfProgramGroups() == 0)
-                        {
-                            Console.Write("press Enter to continue...");
-                            Console.ReadLine();
-                            break;
-                        }
-                        do
-                        {
-                            Console.WriteLine("Select a Program Group to adjust the volume: ");
-                        } while (!(int.TryParse(Console.ReadLine(), out groupNum)));
-                        PGM.getProgramGroup(groupNum).displayAudioSessions();
-                        ProgramGroup toAdjustVol = PGM.getProgramGroup(groupNum);
-                        Console.WriteLine("current volume: " + toAdjustVol.getVolume());
-                        int vol;
-                        do
-                        {
-                            Console.Write("enter the new volume percentage(0-100): ");
-                        } while (!(int.TryParse(Console.ReadLine(), out vol)));
-                        toAdjustVol.setVolume(vol);
-                        Console.WriteLine("Volume has been Set!");
-                        Console.Write("press Enter to continue...");
-                        Console.ReadLine();
-                        break;
-                    case 5:
-                        Console.Clear();
-                        singleAppVolumeControl();
-                        break;
-                    case 6:
-                        proceed = "n";
-                        pgmDataFile.Save(PGM.generateProgramGroupManagerData());
-                        break;
-                    default:
-                        Console.WriteLine("Please enter a valid number from the options above");
-                        Console.Write("press Enter to continue...");
-                        Console.ReadLine();
-                        break;
-                }
-            } while (proceed != "n");
-            */
-        }
-
-        public static void singleAppVolumeControl()
-        {
-            AudioSessionManager ASM = new AudioSessionManager();
-            int ans = 99;
-            int tPid = 99;
-            string proceed = "n";
-
-            ASM.updateActiveAudioSessions();
-            ASM.displayActiveAudioSessions();
-            do
-            {
-                Console.Write("enter application number from above list: ");
-            } while (!(int.TryParse(Console.ReadLine(), out ans)));
-            tPid = ASM.getActiveAudioSessions().ElementAt(ans).ProcessId;
-            float vol;
-            do
-            {
-                Console.Write("enter the volume as a percentage(0-100): ");
-            } while (!(float.TryParse(Console.ReadLine(), NumberStyles.Number, CultureInfo.InvariantCulture.NumberFormat, out vol)));
-            VolumeMixer.SetApplicationVolume(tPid, vol);
-            Console.WriteLine("Volume has been Set!");
-            Console.Write("Press Enter to continue......");
-            proceed = Console.ReadLine();
+            websockets_task.Wait();
+            http_requests_task.Wait();
         }
     }
 }

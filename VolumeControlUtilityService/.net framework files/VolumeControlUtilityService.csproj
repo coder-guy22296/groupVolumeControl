@@ -1,0 +1,67 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net5.0-windows</TargetFramework>
+    <OutputType>WinExe</OutputType>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+  </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject>VolumeControlUtilityService.Program</StartupObject>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
+    <OutputPath>bin\x86\Debug\</OutputPath>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
+    <OutputPath>bin\x86\Release\</OutputPath>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System.Configuration.Install" />
+    <Reference Include="System.ServiceProcess" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Update="ProjectInstaller.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Update="ProjectInstaller.Designer.cs">
+      <DependentUpon>ProjectInstaller.cs</DependentUpon>
+    </Compile>
+    <Compile Update="VolumeControlUtilityService.cs" />
+    <Compile Update="VolumeControlUtilityService.Designer.cs">
+      <DependentUpon>VolumeControlUtilityService.cs</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Update="ProjectInstaller.resx">
+      <DependentUpon>ProjectInstaller.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Update="VolumeControlUtilityService.resx">
+      <DependentUpon>VolumeControlUtilityService.cs</DependentUpon>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\VolumeControlUtility\VolumeControlUtility.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Analyzer Include="..\packages\Microsoft.Windows.CsWin32.0.1.506-beta\analyzers\cs\MessagePack.Annotations.dll" />
+    <Analyzer Include="..\packages\Microsoft.Windows.CsWin32.0.1.506-beta\analyzers\cs\MessagePack.dll" />
+    <Analyzer Include="..\packages\Microsoft.Windows.CsWin32.0.1.506-beta\analyzers\cs\Microsoft.Bcl.AsyncInterfaces.dll" />
+    <Analyzer Include="..\packages\Microsoft.Windows.CsWin32.0.1.506-beta\analyzers\cs\Microsoft.Windows.CsWin32.dll" />
+    <Analyzer Include="..\packages\Microsoft.Windows.CsWin32.0.1.506-beta\analyzers\cs\Microsoft.Windows.SDK.Win32Docs.dll" />
+    <Analyzer Include="..\packages\Microsoft.Windows.CsWin32.0.1.506-beta\analyzers\cs\System.Buffers.dll" />
+    <Analyzer Include="..\packages\Microsoft.Windows.CsWin32.0.1.506-beta\analyzers\cs\System.Memory.dll" />
+    <Analyzer Include="..\packages\Microsoft.Windows.CsWin32.0.1.506-beta\analyzers\cs\System.Numerics.Vectors.dll" />
+    <Analyzer Include="..\packages\Microsoft.Windows.CsWin32.0.1.506-beta\analyzers\cs\System.Runtime.CompilerServices.Unsafe.dll" />
+    <Analyzer Include="..\packages\Microsoft.Windows.CsWin32.0.1.506-beta\analyzers\cs\System.Text.Encodings.Web.dll" />
+    <Analyzer Include="..\packages\Microsoft.Windows.CsWin32.0.1.506-beta\analyzers\cs\System.Text.Json.dll" />
+    <Analyzer Include="..\packages\Microsoft.Windows.CsWin32.0.1.506-beta\analyzers\cs\System.Threading.Tasks.Extensions.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="5.0.1" />
+    <PackageReference Include="Microsoft.Windows.Compatibility" Version="5.0.2" />
+    <PackageReference Include="Microsoft.Windows.CsWin32" Version="0.1.506-beta" />
+    <PackageReference Include="Microsoft.DotNet.UpgradeAssistant.Extensions.Default.Analyzers" Version="0.3.242703">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
+</Project>

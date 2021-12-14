@@ -2,10 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 
+using Microsoft.Extensions.Logging;
+
 namespace VolumeControlUtility
 {
     [Serializable]
-    class ProgramGroupManager
+    public class ProgramGroupManager
     {
         public List<ProgramGroup> programGroups = new List<ProgramGroup>();
         public int NumOfProgramGroups = 0;
@@ -18,11 +20,20 @@ namespace VolumeControlUtility
 
         }
 
-        /*
-            Creates a Program Group with the specified name and adds
-            the group to the Collection of Program Groups
-            */
-        public void createProgramGroup(string groupName)
+        public void setLogger(ILogger logger)
+        {
+
+            foreach (ProgramGroup group in programGroups)
+            {
+                group.setLogger(logger);
+            }
+        }
+
+    /*
+        Creates a Program Group with the specified name and adds
+        the group to the Collection of Program Groups
+        */
+    public void createProgramGroup(string groupName)
         {
             ProgramGroup toBeAdded = new ProgramGroup(groupName, 100);
             toBeAdded.updateVolume();

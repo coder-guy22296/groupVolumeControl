@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 namespace VolumeControlUtility
 {
-    class ProgramGroupData
+    public class ProgramGroupData
     {
         public string groupName = "[Default]";
         public int volAsPercent = 0;

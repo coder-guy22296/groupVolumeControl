@@ -1,0 +1,16 @@
+﻿IMMDeviceEnumerator
+IMMDevice
+IAudioSessionManager
+IAudioSessionManager2
+IAudioSessionEnumerator
+IAudioSessionControl
+IAudioSessionControl2
+ISimpleAudioVolume
+FindWindow
+GetWindowThreadProcessId
+MMDeviceEnumerator
+CoCreateInstance
+CLSCTX
+PROPVARIANT
+PropVariantInit
+PropVariantClear

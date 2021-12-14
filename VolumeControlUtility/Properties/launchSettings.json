@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "VolumeControlUtility": {
+      "commandName": "Project",
+      "nativeDebugging": true
+    }
+  }
+}

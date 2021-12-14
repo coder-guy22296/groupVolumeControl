@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace VolumeControlUtility
 {
-    class ProgramGroupManagerFactory
+    public class ProgramGroupManagerFactory
     {
         AudioSessionManager ASM = new AudioSessionManager();
         
@@ -27,7 +27,7 @@ namespace VolumeControlUtility
             {
                 foreach (string strSession in PGMdata.programGroups.ElementAt(programGroupIndex).audioSessions)
                 {
-                    AudioSession aSession = ASM.getAudioSession(strSession);
+                    AudioSessionV2 aSession = ASM.getAudioSession(strSession);
                     if (aSession == null)
                     {
                         Console.WriteLine(strSession + " is not running, so it will not be loaded into an Program Group");

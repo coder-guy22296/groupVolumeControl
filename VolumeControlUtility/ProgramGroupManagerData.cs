@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace VolumeControlUtility
 {
-    class ProgramGroupManagerData
+    public class ProgramGroupManagerData
     {
         public List<ProgramGroupData> programGroups = new List<ProgramGroupData>();
         public int NumOfProgramGroups = 0;

@@ -4,16 +4,18 @@ using System.Linq;
 using GlobalHotkeys;
 using System.Windows.Forms;
 
+using Microsoft.Extensions.Logging;
+
 namespace VolumeControlUtility
 {
-    class ProgramGroup
+    public class ProgramGroup
     {
-        public static RgbStrip rgbStrip = new RgbStrip();
+        public static RgbStrip rgbStrip = null;//  new RgbStrip();
         public string groupName = "[Default]";
         public int volAsPercent = 0;
         public int numOfSessions = 0;
         public List<string> audioSessions = new List<string>();
-        public List<AudioSession> loadedAudioSessions = new List<AudioSession>();
+        public List<AudioSessionV2> loadedAudioSessions = new List<AudioSessionV2>();
         public List<string> nonLoadedAudioSessions = new List<string>();
 
         //hotkey data
@@ -25,6 +27,8 @@ namespace VolumeControlUtility
         public GlobalHotkey hotkeyVolUp = null;//volume up
         public GlobalHotkey hotkeyVolDown = null;//volume down
         private bool hotkeyPendingRegistration;
+
+        ILogger logs;
 
         /*
             Constructor used when creating a new program group from the UI
@@ -59,6 +63,11 @@ namespace VolumeControlUtility
         ~ProgramGroup()
         {
             Console.WriteLine("Group " + this.groupName + " Destroyed");
+        }
+
+        public void setLogger(ILogger logger)
+        {
+            logs = logger;
         }
 
         /*
@@ -187,6 +196,7 @@ namespace VolumeControlUtility
             */
         public void setVolume(int inputVolume)
         {
+            if (logs != null)  logs.LogInformation("setting volume");
             //updateActiveSessions();
             if (inputVolume <= 0)
             {
@@ -200,7 +210,9 @@ namespace VolumeControlUtility
             {
                 volAsPercent = inputVolume;
             }
+            if (logs != null) logs.LogInformation("updating volume");
             updateVolume();
+            if (logs != null) logs.LogInformation("volume updated");
             if (rgbStrip != null)
             {
                 rgbStrip.barGraphVisual((Byte)volAsPercent);
@@ -244,7 +256,7 @@ namespace VolumeControlUtility
         /*
             Adds an audio program to the Collection of active audio programs
             */
-        public void addAudioSession(AudioSession Session, Boolean rip)
+        public void addAudioSession(AudioSessionV2 Session, Boolean rip)
         {
                 loadedAudioSessions.Add(Session);
                 if(!rip)
@@ -258,7 +270,7 @@ namespace VolumeControlUtility
         /*
             Remove an audio program from the program group
             */
-        public void removeAudioSession(AudioSession Session)
+        public void removeAudioSession(AudioSessionV2 Session)
         {
             lock (loadedAudioSessions)
             {
@@ -277,8 +289,8 @@ namespace VolumeControlUtility
         {
             lock (loadedAudioSessions) {
                 updateActiveSessions();
-                AudioSession targetSession = null;
-                foreach (AudioSession currentAS in loadedAudioSessions.ToList())
+                AudioSessionV2 targetSession = null;
+                foreach (AudioSessionV2 currentAS in loadedAudioSessions.ToList())
                 {
                     if(currentAS.Process.ProcessName == Session){
                         targetSession = currentAS;
@@ -299,7 +311,7 @@ namespace VolumeControlUtility
             lock(loadedAudioSessions) {
                 if (loadedAudioSessions != null)
                 {
-                    foreach (AudioSession currentAS in loadedAudioSessions.ToList())
+                    foreach (AudioSessionV2 currentAS in loadedAudioSessions.ToList())
                     {
                         //AudioSession ash = Program.ASM.getAudioSession(currentAS.Process.ProcessName);
                         VolumeMixer.SetApplicationVolume(currentAS.ProcessId, (float)volAsPercent);
@@ -329,7 +341,7 @@ namespace VolumeControlUtility
             {
                 for (int i = 0; i < loadedAudioSessions.Count; i++)
                 {
-                    AudioSession session = loadedAudioSessions.ElementAt(i);
+                    AudioSessionV2 session = loadedAudioSessions.ElementAt(i);
                     if (session.Process != null)
                     {
                         Console.WriteLine(i + ") " + session.Process.ProcessName);
@@ -350,7 +362,7 @@ namespace VolumeControlUtility
         {
             ProgramGroupData outPGdata = new ProgramGroupData();
             //add audio sessions for programs that were running when THIS program started running
-            foreach(AudioSession aSession in loadedAudioSessions.Distinct())
+            foreach(AudioSessionV2 aSession in loadedAudioSessions.Distinct())
             {
                 outPGdata.audioSessions.Add(aSession.Process.ProcessName);
                 outPGdata.numOfSessions++;
@@ -392,7 +404,7 @@ namespace VolumeControlUtility
             for (int i = sessionsTmp.Count; i > 0; i--)
             {
                 string strSession = sessionsTmp.ElementAt(i - 1);
-                AudioSession aSession = Program.ASM.getAudioSession(strSession);
+                AudioSessionV2 aSession = Program.ASM.getAudioSession(strSession);
                 if (aSession == null)
                 {
                     Console.WriteLine(strSession + " is not running, so it will not be loaded into an Program Group");

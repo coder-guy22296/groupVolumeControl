@@ -8,9 +8,9 @@ using System.Data;
 namespace VolumeControlUtility
 {
     [Serializable]
-    class AudioSessionManager
+    public class AudioSessionManager
     {
-        public List<AudioSession> activeAudioSessions = new List<AudioSession>();
+        public List<AudioSessionV2> activeAudioSessions = new List<AudioSessionV2>();
 
         public AudioSessionManager()
         {
@@ -21,7 +21,7 @@ namespace VolumeControlUtility
         {
             activeAudioSessions.Clear();
 
-            foreach (AudioSession session in AudioUtilities.GetAllSessions())
+            foreach (AudioSessionV2 session in AudioUtilitiesV2.GetAllSessions())
             {
                 if (session.Process != null)
                 {
@@ -39,7 +39,7 @@ namespace VolumeControlUtility
             // dump all audio sessions
             for (int i = 0; i < activeAudioSessions.Count; i++)
             {
-                AudioSession session = activeAudioSessions.ElementAt(i);
+                AudioSessionV2 session = activeAudioSessions.ElementAt(i);
                 if (session.Process != null)
                 {
                     // only the one associated with a defined process
@@ -53,7 +53,7 @@ namespace VolumeControlUtility
             Console.WriteLine("======[END]======");
         }
 
-        public List<AudioSession> getActiveAudioSessions()
+        public List<AudioSessionV2> getActiveAudioSessions()
         {
             lock (activeAudioSessions) {
                 updateActiveAudioSessions();
@@ -61,14 +61,14 @@ namespace VolumeControlUtility
             }
         }
 
-        public AudioSession getAudioSession(int index)
+        public AudioSessionV2 getAudioSession(int index)
         {
             return activeAudioSessions.ElementAt(index);
         }
-        public AudioSession getAudioSession(string name)
+        public AudioSessionV2 getAudioSession(string name)
         {
             //updateActiveAudioSessions();
-            foreach (AudioSession session in getActiveAudioSessions().ToList())
+            foreach (AudioSessionV2 session in getActiveAudioSessions().ToList())
             {
                 if (session != null && session.Process.ProcessName == name)
                 {

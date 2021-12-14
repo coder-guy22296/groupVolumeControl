@@ -1,45 +1,38 @@
-﻿/* I am not the author of this code, however I may have slightly modified it*/
-// original source, I think: https://stackoverflow.com/questions/14306048/controling-volume-mixer
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Runtime.InteropServices;
-using System.Globalization;
-using GroupVolumeControl;
+﻿using System;
+using System.Diagnostics;
+using Microsoft.Windows.Sdk;
 
 namespace VolumeControlUtility
 {
     public class VolumeMixer
     {
-        public static float? GetApplicationVolume(int pid)
+        unsafe public static float? GetApplicationVolume(int pid)
         {
-            ISimpleAudioVolume volume = GetVolumeObject(pid);
+            ISimpleAudioVolume* volume = GetVolumeControl(pid);
             if (volume == null)
                 return null;
 
             float level;
-            volume.GetMasterVolume(out level);
-            Marshal.ReleaseComObject(volume);
+            volume->GetMasterVolume(out level);
+            volume->Release();
             return level * 100;
         }
 
-        public static bool? GetApplicationMute(int pid)
+        unsafe public static bool? GetApplicationMute(int pid)
         {
-            ISimpleAudioVolume volume = GetVolumeObject(pid);
+            ISimpleAudioVolume* volume = GetVolumeControl(pid);
             if (volume == null)
                 return null;
 
-            bool mute;
-            volume.GetMute(out mute);
-            Marshal.ReleaseComObject(volume);
+            BOOL mute;
+            volume->GetMute(out mute);
+            volume->Release();
             return mute;
         }
 
-        public static void SetApplicationVolume(int pid, float level)
+        unsafe public static void SetApplicationVolume(int pid, float level)
         {
-            ISimpleAudioVolume volume = GetVolumeObject(pid);
+            ISimpleAudioVolume* volume = GetVolumeControl(pid);
             //Console.WriteLine("vol object pid " + pid + " = "+ volume);
             if (volume == null) { 
                 //ConsoleManager.Show();
@@ -47,351 +40,136 @@ namespace VolumeControlUtility
                 return;
             }
             Guid guid = Guid.Empty;
-            volume.SetMasterVolume(level / 100, ref guid);
-            Marshal.ReleaseComObject(volume);
+            volume->SetMasterVolume(level / 100, ref guid);
+            volume->Release();
         }
 
-        public static void SetApplicationMute(int pid, bool mute)
+        unsafe public static void SetApplicationMute(int pid, bool mute)
         {
-            ISimpleAudioVolume volume = GetVolumeObject(pid);
+            ISimpleAudioVolume* volume = GetVolumeControl(pid);
             if (volume == null)
                 return;
 
             Guid guid = Guid.Empty;
-            volume.SetMute(mute, ref guid);
-            Marshal.ReleaseComObject(volume);
+            volume->SetMute(mute, ref guid);
+            volume->Release();
         }
 
-        private static ISimpleAudioVolume GetVolumeObject(int pid)
+        unsafe private static ISimpleAudioVolume* GetVolumeControl(int pid)
         {
-            // get the speakers (1st render + multimedia) device
-            IMMDeviceEnumerator deviceEnumerator = MMDeviceEnumeratorFactory.CreateInstance();
-            //IMMDeviceEnumerator deviceEnumerator = (IMMDeviceEnumerator)(new MMDeviceEnumerator());
-            IMMDevice speakers;
-            deviceEnumerator.GetDefaultAudioEndpoint(EDataFlow.eRender, ERole.eMultimedia, out speakers);
+            //CLSCTX CLSCTX_ALL = CLSCTX.CLSCTX_INPROC_SERVER
+            //    | CLSCTX.CLSCTX_INPROC_HANDLER
+            //    | CLSCTX.CLSCTX_LOCAL_SERVER
+            //    | CLSCTX.CLSCTX_REMOTE_SERVER;
 
-            // activate the session manager. we need the enumerator
-            Guid IID_IAudioSessionManager2 = typeof(IAudioSessionManager2).GUID;
-            object o;
-            speakers.Activate(ref IID_IAudioSessionManager2, 0, IntPtr.Zero, out o);
-            IAudioSessionManager2 mgr = (IAudioSessionManager2)o;
+            //Guid CLSID_MMDeviceEnumerator = typeof(MMDeviceEnumerator).GUID;
+            //Guid IID_IMMDeviceEnumerator = typeof(IMMDeviceEnumerator).GUID;
+            //Guid IID_IAudioSessionManager2 = typeof(IAudioSessionManager2).GUID;
+            //Guid IID_IAudioSessionControl2 = typeof(IAudioSessionControl2).GUID;
+            //Guid IID_ISimpleAudioVolume = typeof(ISimpleAudioVolume).GUID;
 
-            // enumerate sessions for on this device
-            IAudioSessionEnumerator sessionEnumerator;
-            mgr.GetSessionEnumerator(out sessionEnumerator);
-            int count;
-            sessionEnumerator.GetCount(out count);
+            //IMMDeviceEnumerator* deviceEnumerator;
+            //IMMDevice* speakers;
+            IAudioSessionManager2* audioSessionManager2;
+            IAudioSessionEnumerator* sessionEnumerator;
+            ISimpleAudioVolume* volumeControl = null;
+            int audioSessionCount;
 
-            // search for an audio session with the required name
-            // NOTE: we could also use the process id instead of the app name (with IAudioSessionControl2)
-            ISimpleAudioVolume volumeControl = null;
-            for (int i = 0; i < count; i++)
+            //void* deviceEnumeratorPtr;
+            //PInvoke.CoCreateInstance(
+            //    CLSID_MMDeviceEnumerator,
+            //    null,
+            //    (uint)CLSCTX_ALL,
+            //    IID_IMMDeviceEnumerator,
+            //    out deviceEnumeratorPtr
+            //).ThrowOnFailure();
+            //deviceEnumerator = (IMMDeviceEnumerator*) deviceEnumeratorPtr;
+
+            //deviceEnumerator->GetDefaultAudioEndpoint(
+            //    EDataFlow.eRender,
+            //    ERole.eMultimedia,
+            //    out speakers
+            //).ThrowOnFailure();
+
+            //void* audioSessionManager2Ptr;
+            //speakers->Activate(
+            //    IID_IAudioSessionManager2,
+            //    (uint)CLSCTX_ALL,
+            //    null,
+            //    out audioSessionManager2Ptr
+            //);
+            //audioSessionManager2 = (IAudioSessionManager2*) audioSessionManager2Ptr;
+            IMMDevice* speaker = AudioUtilitiesV2.GetDefaultSpeaker();
+
+            audioSessionManager2 = AudioUtilitiesV2.GetAudioSessionManager(speaker);
+
+            audioSessionManager2->GetSessionEnumerator(out sessionEnumerator).ThrowOnFailure();
+            sessionEnumerator->GetCount(out audioSessionCount);
+
+            for (int index = 0; index < audioSessionCount; index++)
             {
-                IAudioSessionControl2 ctl;
-                sessionEnumerator.GetSession(i, out ctl);
-                int cpid;
-                ctl.GetProcessId(out cpid);
+                IAudioSessionControl* ctl = null;
+                IAudioSessionControl2* ctl2 = null;
 
-                if (cpid == pid)
+                sessionEnumerator->GetSession(index, out ctl).ThrowOnFailure();
+                if (ctl == null)
                 {
-                    volumeControl = ctl as ISimpleAudioVolume;
+                    Console.WriteLine("GetVolumeControl: ctl is null");
+                    continue;
+                }
+
+                void* ctl2Ptr;
+                ctl->QueryInterface(AudioUtilitiesV2.IID_IAudioSessionControl2, out ctl2Ptr).ThrowOnFailure();
+                ctl2 = (IAudioSessionControl2*) ctl2Ptr;
+                if (ctl2 == null)
+                {
+                    Console.WriteLine("GetVolumeControl: ctl2 is null");
+                    continue;
+                }
+
+                PWSTR displayName;
+                AudioSessionState state;
+                uint processId = 0;
+                PWSTR sessionId;
+                PWSTR sessionInstanceId;
+
+                ctl2->GetDisplayName(out displayName).ThrowOnFailure();
+                ctl2->GetState(out state).ThrowOnFailure();
+                ctl2->GetProcessId(out processId).ThrowOnFailure();
+                ctl2->GetSessionIdentifier(out sessionId).ThrowOnFailure();
+                ctl2->GetSessionInstanceIdentifier(out sessionInstanceId).ThrowOnFailure();
+
+                if (checked((int)processId) == pid)
+                {
+                    Console.WriteLine("Found Audio Session: ");
+                    Console.WriteLine("======================================================");
+                    Console.WriteLine("Audio Session Display Name: " + displayName);
+                    Console.WriteLine("Audio Session Process Name: " + Process.GetProcessById(checked((int)processId)).ProcessName);
+                    Console.WriteLine("Audio Session Process Id: " + pid);
+                    Console.WriteLine("Audio Session Session Id: " + sessionId);
+                    Console.WriteLine("Audio Session Session Instance Id: " + sessionInstanceId);
+                    Console.WriteLine("Audio Session State: " + state);
+                    Console.WriteLine("======================================================");
+
+
+                    void* simpleAudioVolumePtr;
+                    ctl->QueryInterface(AudioUtilitiesV2.IID_ISimpleAudioVolume, out simpleAudioVolumePtr).ThrowOnFailure();
+                    volumeControl = (ISimpleAudioVolume*) simpleAudioVolumePtr;
+
+                    ctl->Release();
+                    ctl2->Release();
                     break;
                 }
-                Marshal.ReleaseComObject(ctl);
+                ctl->Release();
+                ctl2->Release();
             }
-            Marshal.ReleaseComObject(sessionEnumerator);
-            Marshal.ReleaseComObject(mgr);
-            Marshal.ReleaseComObject(speakers);
-            Marshal.ReleaseComObject(deviceEnumerator);
+            //deviceEnumerator->Release();
+            //speakers->Release();
+            speaker->Release();
+            audioSessionManager2->Release();
+            sessionEnumerator->Release();
             return volumeControl;
+
         }
-    }
-
-
-    [ComImport]
-    [Guid("BCDE0395-E52F-467C-8E3D-C4579291692E")]
-    internal class MMDeviceEnumerator
-    {
-
-    }
-
-    [Flags]
-    internal enum CLSCTX
-        {
-            CLSCTX_INPROC_SERVER = 0x1,
-            CLSCTX_INPROC_HANDLER = 0x2,
-            CLSCTX_LOCAL_SERVER = 0x4,
-            CLSCTX_REMOTE_SERVER = 0x10,
-            CLSCTX_ALL = CLSCTX_INPROC_SERVER | CLSCTX_INPROC_HANDLER | CLSCTX_LOCAL_SERVER | CLSCTX_REMOTE_SERVER
-        }
-
-    internal enum STGM
-        {
-            STGM_READ = 0x00000000,
-        }
-
-        internal enum DEVICE_STATE
-        {
-            ACTIVE = 0x00000001,
-            DISABLED = 0x00000002,
-            NOTPRESENT = 0x00000004,
-            UNPLUGGED = 0x00000008,
-            MASK_ALL = 0x0000000F
-        }
-
-        [StructLayout(LayoutKind.Sequential)]
-        internal struct PROPERTYKEY
-        {
-            public Guid fmtid;
-            public int pid;
-
-            public override string ToString()
-            {
-                return fmtid.ToString("B") + " " + pid;
-            }
-        }
-
-        // NOTE: we only define what we handle
-        [Flags]
-        internal enum VARTYPE : short
-        {
-            VT_I4 = 3,
-            VT_BOOL = 11,
-            VT_UI4 = 19,
-            VT_LPWSTR = 31,
-            VT_BLOB = 65,
-            VT_CLSID = 72,
-        }
-
-        [StructLayout(LayoutKind.Sequential)]
-        internal struct PROPVARIANT
-        {
-            public VARTYPE vt;
-            public ushort wReserved1;
-            public ushort wReserved2;
-            public ushort wReserved3;
-            public PROPVARIANTunion union;
-
-            public object GetValue()
-            {
-                switch (vt)
-                {
-                    case VARTYPE.VT_BOOL:
-                        return union.boolVal != 0;
-
-                    case VARTYPE.VT_LPWSTR:
-                        return Marshal.PtrToStringUni(union.pwszVal);
-
-                    case VARTYPE.VT_UI4:
-                        return union.lVal;
-
-                    case VARTYPE.VT_CLSID:
-                        return (Guid)Marshal.PtrToStructure(union.puuid, typeof(Guid));
-
-                    default:
-                        return vt.ToString() + ":?";
-                }
-            }
-        }
-
-        [StructLayout(LayoutKind.Explicit)]
-        internal struct PROPVARIANTunion
-        {
-            [FieldOffset(0)]
-            public int lVal;
-            [FieldOffset(0)]
-            public ulong uhVal;
-            [FieldOffset(0)]
-            public short boolVal;
-            [FieldOffset(0)]
-            public IntPtr pwszVal;
-            [FieldOffset(0)]
-            public IntPtr puuid;
-        }
-
-    internal enum EDataFlow
-    {
-        eRender,
-        eCapture,
-        eAll,
-        EDataFlow_enum_count
-    }
-
-    internal enum ERole
-    {
-        eConsole,
-        eMultimedia,
-        eCommunications,
-        ERole_enum_count
-    }
-
-    [Guid("0BD7A1BE-7A1A-44DB-8397-CC5392387B5E"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-    internal interface IMMDeviceCollection
-        {
-            [PreserveSig]
-            int GetCount(out int pcDevices);
-
-            [PreserveSig]
-            int Item(int nDevice, out IMMDevice ppDevice);
-        }
-
-    [Guid("7991EEC9-7E89-4D85-8390-6C703CEC60C0"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-    internal interface IMMNotificationClient
-        {
-            void OnDeviceStateChanged([MarshalAs(UnmanagedType.LPWStr)] string pwstrDeviceId, DEVICE_STATE dwNewState);
-            void OnDeviceAdded([MarshalAs(UnmanagedType.LPWStr)] string pwstrDeviceId);
-            void OnDeviceRemoved([MarshalAs(UnmanagedType.LPWStr)] string deviceId);
-            void OnDefaultDeviceChanged(EDataFlow flow, ERole role, string pwstrDefaultDeviceId);
-            void OnPropertyValueChanged([MarshalAs(UnmanagedType.LPWStr)] string pwstrDeviceId, PROPERTYKEY key);
-        }
-
-    [Guid("A95664D2-9614-4F35-A746-DE8DB63617E6"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-    internal interface IMMDeviceEnumerator
-    {
-        int EnumAudioEndpoints(EDataFlow dataFlow, DEVICE_STATE dwStateMask, out IMMDeviceCollection ppDevices);
-
-        int GetDefaultAudioEndpoint(EDataFlow dataFlow, ERole role, out IMMDevice ppEndpoint);
-
-        int GetDevice([MarshalAs(UnmanagedType.LPWStr)] string pwstrId, out IMMDevice ppDevice);
-
-        int RegisterEndpointNotificationCallback(IMMNotificationClient pClient);
-
-        int UnregisterEndpointNotificationCallback(IMMNotificationClient pClient);
-    }
-
-    internal static class MMDeviceEnumeratorFactory
-    {
-        private static readonly Guid MMDeviceEnumerator = new Guid("BCDE0395-E52F-467C-8E3D-C4579291692E");
-
-        internal static IMMDeviceEnumerator CreateInstance()
-        {
-            var type = Type.GetTypeFromCLSID(MMDeviceEnumerator);
-            return (IMMDeviceEnumerator)Activator.CreateInstance(type);
-        }
-    }
-
-    [Guid("D666063F-1587-4E43-81F1-B948E807363F"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-    internal interface IMMDevice
-    {
-        [PreserveSig]
-        int Activate(ref Guid iid, int dwClsCtx, IntPtr pActivationParams, [MarshalAs(UnmanagedType.IUnknown)] out object ppInterface);
-
-        [PreserveSig]
-        int Activate([MarshalAs(UnmanagedType.LPStruct)] Guid riid, CLSCTX dwClsCtx, IntPtr pActivationParams, [MarshalAs(UnmanagedType.IUnknown)] out object ppInterface);
-
-        [PreserveSig]
-        int OpenPropertyStore(STGM stgmAccess, out IPropertyStore ppProperties);
-
-        [PreserveSig]
-        int GetId([MarshalAs(UnmanagedType.LPWStr)] out string ppstrId);
-
-        [PreserveSig]
-        int GetState(out DEVICE_STATE pdwState);
-        // the rest is not implemented
-    }
-
-    [Guid("886d8eeb-8cf2-4446-8d02-cdba1dbdcf99"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-    internal interface IPropertyStore
-    {
-        [PreserveSig]
-        int GetCount(out int cProps);
-
-        [PreserveSig]
-        int GetAt(int iProp, out PROPERTYKEY pkey);
-
-        [PreserveSig]
-        int GetValue(ref PROPERTYKEY key, ref PROPVARIANT pv);
-
-        [PreserveSig]
-        int SetValue(ref PROPERTYKEY key, ref PROPVARIANT propvar);
-
-        [PreserveSig]
-        int Commit();
-    }
-
-    [Guid("77AA99A0-1BD6-484F-8BC7-2C654C9A9B6F"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-    internal interface IAudioSessionManager2
-    {
-        int NotImpl1();
-        int NotImpl2();
-
-        [PreserveSig]
-        int GetSessionEnumerator(out IAudioSessionEnumerator SessionEnum);
-
-        // the rest is not implemented
-    }
-
-    [Guid("E2F5BB11-0570-40CA-ACDD-3AA01277DEE8"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-    internal interface IAudioSessionEnumerator
-    {
-        [PreserveSig]
-        int GetCount(out int SessionCount);
-
-        [PreserveSig]
-        int GetSession(int SessionCount, out IAudioSessionControl2 Session);
-    }
-
-    [Guid("87CE5498-68D6-44E5-9215-6DA47EF883D8"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-    internal interface ISimpleAudioVolume
-    {
-        [PreserveSig]
-        int SetMasterVolume(float fLevel, ref Guid EventContext);
-
-        [PreserveSig]
-        int GetMasterVolume(out float pfLevel);
-
-        [PreserveSig]
-        int SetMute(bool bMute, ref Guid EventContext);
-
-        [PreserveSig]
-        int GetMute(out bool pbMute);
-    }
-
-    [Guid("bfb7ff88-7239-4fc9-8fa2-07c950be9c6d"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-    internal interface IAudioSessionControl2
-    {
-        // IAudioSessionControl
-        [PreserveSig]
-        int NotImpl0();
-
-        [PreserveSig]
-        int GetDisplayName([MarshalAs(UnmanagedType.LPWStr)] out string pRetVal);
-
-        [PreserveSig]
-        int SetDisplayName([MarshalAs(UnmanagedType.LPWStr)]string Value, [MarshalAs(UnmanagedType.LPStruct)] Guid EventContext);
-
-        [PreserveSig]
-        int GetIconPath([MarshalAs(UnmanagedType.LPWStr)] out string pRetVal);
-
-        [PreserveSig]
-        int SetIconPath([MarshalAs(UnmanagedType.LPWStr)] string Value, [MarshalAs(UnmanagedType.LPStruct)] Guid EventContext);
-
-        [PreserveSig]
-        int GetGroupingParam(out Guid pRetVal);
-
-        [PreserveSig]
-        int SetGroupingParam([MarshalAs(UnmanagedType.LPStruct)] Guid Override, [MarshalAs(UnmanagedType.LPStruct)] Guid EventContext);
-
-        [PreserveSig]
-        int NotImpl1();
-
-        [PreserveSig]
-        int NotImpl2();
-
-        // IAudioSessionControl2
-        [PreserveSig]
-        int GetSessionIdentifier([MarshalAs(UnmanagedType.LPWStr)] out string pRetVal);
-
-        [PreserveSig]
-        int GetSessionInstanceIdentifier([MarshalAs(UnmanagedType.LPWStr)] out string pRetVal);
-
-        [PreserveSig]
-        int GetProcessId(out int pRetVal);
-
-        [PreserveSig]
-        int IsSystemSoundsSession();
-
-        [PreserveSig]
-        int SetDuckingPreference(bool optOut);
     }
 }
